@@ -347,3 +347,100 @@ models do not develop majority-class bias toward non-flood predictions.
 - Speckle filter: Refined Lee 3x3 approximated via focal mean on linear scale
   with dB conversion — standard pre-processing for Sentinel-1 IW mode at 10m.
 
+
+---
+
+## PROJECT RESTRUCTURING NOTE — Logged June 2026
+
+### Critical Issue Identified: Flood Labels Contaminated by Water Bodies
+During visual inspection of the flood inventory output from NB05,
+flood-classified pixels (Class 1) were found to cluster predominantly
+on permanent and semi-permanent water surfaces — Lagos Lagoon,
+drainage channels, and tidal inlets — rather than on genuinely
+inundated urban land. This renders the training labels methodologically
+invalid for an urban flood susceptibility model.
+
+Root causes identified:
+1. JRC permanent water mask threshold of 50% occurrence too permissive —
+   seasonal and semi-permanent water bodies (20-49% occurrence) passed
+   through the mask and consistently triggered low SAR backscatter signal
+   regardless of whether a flood event occurred.
+2. Otsu threshold responding to permanent water signal rather than
+   urban inundation signal even after 1.5dB minimum change filter.
+3. No land cover constraint applied — SAR change detection was operating
+   on water, wetland, and mangrove pixels that should have been excluded
+   from urban flood inventory entirely.
+
+### Corrective Methodology Decisions
+Three simultaneous fixes applied to NB05 (rebuild):
+1. JRC occurrence threshold tightened from 50% to 5% — any pixel
+   water-covered more than 5% of the time is permanently excluded.
+2. ESA WorldCover urban land mask added — only built-up (class 50),
+   cropland (class 40), and grassland (class 30) pixels are eligible
+   for flood classification. Water (80), wetland (90), and mangrove
+   (95) pixels masked regardless of SAR signal.
+3. Minimum backscatter change threshold increased from 1.5dB to 3.0dB —
+   genuine urban inundation produces stronger signal than surface
+   moisture variation on near-water terrain (Twele et al., 2016).
+
+### Project Scope Enhancement — Title Alignment
+Following review of the project title ("AI-Enabled Geospatial Decision
+Support and Disaster Intelligence for Urban Flood Risk Management"),
+the GeoAID framework was expanded from a single-layer static
+susceptibility model to a three-layer decision support architecture:
+
+Layer 1 — Structural Susceptibility (NB02-NB08):
+  Static flood risk map from 16 conditioning factors and ML models.
+  Answers: WHERE is inherently flood-prone.
+
+Layer 2 — Dynamic Risk Activation (NB10 dashboard):
+  GPM IMERG near-real-time rainfall overlaid on static risk map.
+  Answers: WHICH risk zones are being actively triggered by current rainfall.
+
+Layer 3 — Disaster Intelligence (NB09):
+  Infrastructure risk assessment — population, roads, schools,
+  hospitals, buildings at risk per flood risk zone.
+  Answers: WHO and WHAT is at risk in activated zones.
+
+### Feature Matrix Expanded from 14 to 16 Features
+Two new features added:
+
+Feature 15 — HAND (Height Above Nearest Drainage):
+  Derived from DEM and HydroSHEDS flow accumulation.
+  Measures vertical elevation of each pixel above nearest drainage
+  channel. Low HAND = terrain barely above drainage network = highest
+  first-inundation risk. Specifically validated for low-lying coastal
+  urban terrain. Added in revised NB04.
+
+Feature 16 — GPM IMERG 72-hour Event Rainfall Accumulation:
+  NASA Global Precipitation Measurement IMERG product.
+  Event-specific cumulative rainfall in 72 hours preceding each of
+  the four verified flood events. Captures antecedent soil moisture
+  conditions that determine flood response magnitude for equivalent
+  rainfall inputs. Added in new NB04b.
+
+### Revised Notebook Pipeline
+NB01 ✓ — Study area (unchanged)
+NB02 ✓ — Topographic features (unchanged)
+NB03 ✓ — Rainfall, LULC, NDVI (unchanged)
+NB04 ↺ — Soil + distance + HAND model (revised — HAND added)
+NB04b ★ — GPM IMERG event rainfall (new)
+NB05 ↺ — SAR flood inventory (rebuilt — water body masking corrected)
+NB06    — Feature matrix assembly (updated for 16 features)
+NB07    — Model training and evaluation
+NB08    — SHAP explainability analysis
+NB09 ★ — Infrastructure risk assessment — OSM schools, hospitals,
+          roads, buildings overlaid with flood risk map (new)
+NB10 ★ — Streamlit dashboard with GPM IMERG live rainfall layer (updated)
+
+### Methodological Note on SAR Temporal Gap
+The 6-12 day Sentinel-1 revisit cycle does not affect the validity of
+historical label generation (Use Case B). SAR imagery is used ONCE
+to construct historical flood labels from verified past events where
+acquisitions within 1-4 days of each event were confirmed. The temporal
+gap concern applies to real-time flood detection (Use Case A), which
+is outside the scope of this project. Real-time monitoring is
+acknowledged as a natural extension for future work. Dynamic rainfall
+forcing for the operational decision support layer is provided by
+GPM IMERG (30-minute update cycle) rather than SAR.
+
