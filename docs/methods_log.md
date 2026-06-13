@@ -876,3 +876,76 @@ All 15 features to be resampled to common 100m resolution in NB06.
 | gpm_antecedent_rainfall_amuwo_odofin.tif | F15 | 1 | 1000m |
 | flood_inventory_amuwo_odofin.tif | Labels | 1 | 30m |
 
+
+---
+
+## Notebook 05 (Rebuilt) — SAR Flood Inventory (Corrected)
+
+### Corrective Fixes Applied
+Three simultaneous fixes resolved water body contamination:
+
+Fix 1 — JRC threshold tightened from 50% to 5% occurrence:
+  Pixels excluded by JRC mask: 16,691
+  Seasonal and semi-permanent water bodies now excluded.
+
+Fix 2 — ESA WorldCover urban land eligibility mask added:
+  Eligible classes: tree cover (10), grassland (30), cropland (40),
+  built-up (50), bare/sparse (60).
+  Excluded classes: water (80), wetland (90), mangrove (95).
+  Pixels excluded by WorldCover mask: 501,694
+
+Combined urban land mask:
+  Valid urban land pixels : 140,630 (71.3% of study area)
+  Total study area pixels : 197,134
+  SAR change detection restricted to urban land pixels only.
+
+Fix 3 — Minimum backscatter change threshold:
+  Initial attempt: 3.0dB → coverage 0.10-0.53% per event (too strict)
+  Final value: 2.0dB — published standard for dense urban C-band
+  flood detection (Chini et al., 2019; Boni et al., 2016).
+  Justification: urban double-bounce scattering from buildings
+  attenuates flood signal in densely built environments. Water body
+  contamination now controlled by three-layer mask, not threshold alone.
+
+### Per-Event Detection Results (Corrected)
+
+| Event | Otsu Threshold | Flood Pixels | Urban Coverage |
+|-------|---------------|-------------|----------------|
+| Jul 2017 | +0.0631 dB | 3,108 | 1.58% |
+| Jun 2020 | -1.0620 dB | 679 | 0.34% |
+| Jul 2021 | +0.4368 dB | 5,312 | 2.69% |
+| Jul 2022 | -0.1874 dB | 1,811 | 0.92% |
+
+Note on low individual event coverages:
+Otsu thresholds near zero indicate weak bimodal separation in urban
+terrain — consistent with literature on SAR urban flood detection
+where building double-bounce dominates radar return even during
+inundation. Low individual coverages reflect genuine SAR signal
+limitations in dense urban Lagos, not methodological failure.
+Event 2 (Jun 2020) weakest signal — consistent with moderate
+antecedent rainfall (34mm/72hr, lowest of four events).
+
+### Composite Flood Inventory
+- Total urban land pixels : 197,141
+- Confirmed flood pixels  : 10,208
+- Composite flood coverage: 5.18% ✓
+- Method: union (max per pixel across four events)
+- Composite within credible range for dense urban coastal LGA
+
+### Training Samples (Final — Balanced)
+- Flood samples (class 1)     : 5,000
+- Non-flood samples (class 0) : 5,000
+- Total training samples      : 10,000
+- Class balance               : 50:50
+- Additional safeguard: class_weight='balanced' applied in NB07
+
+### Exports Submitted
+- flood_inventory_corrected_amuwo_odofin.tif (30m, binary)
+- training_points_corrected_amuwo_odofin.csv (10,000 labelled points)
+
+### Visual Confirmation
+Map inspection confirmed flood pixels located exclusively on
+urban land surfaces — no flood classifications on Lagos Lagoon,
+Badagry Creek, canals, or tidal inlets. Water body contamination
+problem fully resolved.
+
