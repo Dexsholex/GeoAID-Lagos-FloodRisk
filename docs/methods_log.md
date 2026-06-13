@@ -444,3 +444,435 @@ acknowledged as a natural extension for future work. Dynamic rainfall
 forcing for the operational decision support layer is provided by
 GPM IMERG (30-minute update cycle) rather than SAR.
 
+
+---
+
+## Notebook 04 (Revised) — Soil, Distance Features
+
+### HAND Model — Attempted and Removed
+HAND (Height Above Nearest Drainage) was implemented using two approaches:
+
+Attempt 1: HydroSHEDS flow accumulation thresholding at 500m resolution.
+Result: Sparse channel network missed most urban drainage features in
+Amuwo Odofin. Kernel computation at 30m resolution (5000m radius =
+167-pixel kernel) timed out after 37+ minutes without completing.
+
+Attempt 2: JRC Global Surface Water occurrence > 5% at 100m resolution
+as channel network. focal_min 5000m radius at 100m = 50-pixel kernel.
+Result: Computation completed but produced physically incorrect values.
+Festac Town pixels immediately adjacent to canals showed HAND > 13m
+(red/high) rather than expected low values. Root cause: focal_min
+propagates the MINIMUM elevation within search radius — in coastal
+Lagos, this is always the Lagos Lagoon (0m) rather than local canal
+elevation (3-4m). All HAND values relative to lagoon sea level rather
+than nearest local drainage channel, rendering the layer hydrologically
+meaningless for urban flood susceptibility in this coastal setting.
+
+Decision: HAND removed from feature matrix.
+Justification: Correct HAND computation requires a hydrologically
+conditioned DEM (e.g. MERIT DEM or NASADEM with depression filling)
+where sea-level water bodies are treated separately from inland
+drainage channels. SRTM-based HAND in coastal environments with
+large tidal water bodies produces systematically incorrect values.
+Documented as priority for future work.
+
+### Final NB04 Outputs (Three Features)
+- Feature 12: Soil permeability (OpenLandMap sand fraction, 250m)
+  Mean: 25.68% — clay-dominant coastal soils confirming low
+  infiltration capacity and high runoff generation potential
+- Feature 13: Distance to river (HydroSHEDS flow acc threshold,
+  fastDistanceTransform, 500m) — Mean: 2,337.43m
+- Feature 14: Distance to drainage (JRC occurrence > 10%,
+  fastDistanceTransform, 30m) — Mean: 1,207.16m
+
+Export: soil_distance_amuwo_odofin.tif (3 bands, 100m, Float32)
+
+---
+
+## Notebook 04b — GPM IMERG Antecedent Rainfall (Feature 15)
+
+### Dataset
+- Source: NASA/GPM_L3/IMERG_V07 (gauge-calibrated)
+- Band: precipitation (mm/hr) — note: named 'precipitationCal' in
+  older IMERG versions; renamed 'precipitation' in V07
+- Temporal resolution: 30-minute intervals
+- Spatial resolution: 0.1° (~11km at Lagos latitude)
+- Unit conversion: sum(mm/hr) × 0.5hr interval = total mm accumulated
+
+### Antecedent Window Design
+72-hour window immediately preceding each flood event peak date.
+Scientific rationale: 72-hour antecedent rainfall captures soil
+moisture saturation state — the primary determinant of flood response
+magnitude for equivalent rainfall inputs in tropical urban catchments
+(Beven & Kirkby, 1979; Western et al., 2002).
+
+### Event-Specific 72-Hour Antecedent Rainfall
+
+| Event | Window | Images | Min (mm) | Max (mm) | Mean (mm) |
+|-------|--------|--------|----------|----------|-----------|
+| Jul 2017 | 04-07 Jul 2017 | 144 | 110.14 | 134.29 | 126.20 |
+| Jun 2020 | 14-17 Jun 2020 | 144 | 25.94 | 40.65 | 34.01 |
+| Jul 2021 | 13-16 Jul 2021 | 144 | 3.69 | 11.92 | 10.09 |
+| Jul 2022 | 06-09 Jul 2022 | 144 | 48.54 | 84.39 | 58.70 |
+
+### Key Scientific Finding — Event 3 (July 2021)
+Event 3 produced the second-largest flood footprint (14.02% coverage)
+despite only 10.09mm of antecedent rainfall in the preceding 72 hours.
+This indicates the July 2021 flood was driven by intense short-duration
+rainfall overwhelming structurally constrained drainage capacity rather
+than prolonged antecedent soil saturation. This finding demonstrates
+that antecedent rainfall alone does not explain flood occurrence in
+urbanised coastal terrain — structural drainage capacity (captured by
+TWI, flow accumulation, distance to drainage) matters equally.
+SHAP analysis in NB08 will reveal how the model weights GPM IMERG
+relative to terrain conditioning factors.
+
+### Spatial Note
+GPM IMERG at 0.1° (~11km) resolution is coarser than Amuwo Odofin
+LGA extent. The feature contributes event-specific temporal forcing
+information rather than spatial differentiation within the LGA.
+Standard deviation of composite (3.77mm) confirms spatial uniformity.
+
+### Composite Statistics (Feature 15 — Mean Across Four Events)
+
+| Statistic | Value (mm/72hr) |
+|-----------|----------------|
+| Minimum | 48.09 |
+| Maximum | 62.37 |
+| Mean | 57.25 |
+| Std Dev | 3.77 |
+
+### Exports Submitted
+- gpm_antecedent_rainfall_amuwo_odofin.tif → Feature 15 (ML matrix)
+- gpm_rainfall_2017_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2020_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2021_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2022_amuwo_odofin.tif (event-specific)
+
+---
+
+## FINAL FEATURE MATRIX — 15 Features
+
+| # | Feature | Source | NB | Resolution |
+|---|---------|--------|----|------------|
+| 1 | Elevation | SRTM (NASA/USGS) | NB02 | 30m |
+| 2 | Slope | SRTM derived | NB02 | 30m |
+| 3 | Aspect | SRTM derived | NB02 | 30m |
+| 4 | Flow Accumulation | HydroSHEDS (WWF) | NB02 | 500m |
+| 5 | TWI | SRTM + HydroSHEDS | NB02 | 30m |
+| 6 | Curvature | SRTM Laplacian kernel | NB02 | 30m |
+| 7 | Mean Annual Rainfall | CHIRPS 2013-2023 | NB03 | 5km |
+| 8 | Mean Rainy Days/Year | CHIRPS 2013-2023 | NB03 | 5km |
+| 9 | Extreme Rainfall Freq | CHIRPS >50mm/day | NB03 | 5km |
+| 10 | Land Use/Land Cover | ESA WorldCover 2021 | NB03 | 10m |
+| 11 | NDVI | Sentinel-2 2020-2023 | NB03 | 10m |
+| 12 | Soil Permeability | OpenLandMap (USDA) | NB04 | 250m |
+| 13 | Distance to Rivers | HydroSHEDS flow acc | NB04 | 500m |
+| 14 | Distance to Drainage | JRC Surface Water | NB04 | 30m |
+| 15 | GPM IMERG 72hr Rainfall | NASA GPM IMERG V07 | NB04b | 11km |
+
+HAND excluded: SRTM-based HAND computation in coastal environments
+with large tidal water bodies produces systematically incorrect values
+relative to sea-level rather than local drainage. Recommended for
+future work using MERIT DEM or NASADEM with hydrological conditioning.
+
+All 15 features to be resampled to common 100m resolution in NB06.
+
+### GeoTIFF Export Summary — Data Acquisition Phase Complete
+
+| File | Features | Bands | Scale |
+|------|----------|-------|-------|
+| topo_features_amuwo_odofin.tif | F1-F6 | 6 | 30m |
+| rainfall_lulc_ndvi_amuwo_odofin.tif | F7-F11 | 5 | 100m |
+| soil_distance_amuwo_odofin.tif | F12-F14 | 3 | 100m |
+| gpm_antecedent_rainfall_amuwo_odofin.tif | F15 | 1 | 1000m |
+| flood_inventory_amuwo_odofin.tif | Labels | 1 | 30m |
+
+
+---
+
+## Notebook 04 (Revised) — Soil, Distance Features
+
+### HAND Model — Attempted and Removed
+HAND (Height Above Nearest Drainage) was implemented using two approaches:
+
+Attempt 1: HydroSHEDS flow accumulation thresholding at 500m resolution.
+Result: Sparse channel network missed most urban drainage features in
+Amuwo Odofin. Kernel computation at 30m resolution (5000m radius =
+167-pixel kernel) timed out after 37+ minutes without completing.
+
+Attempt 2: JRC Global Surface Water occurrence > 5% at 100m resolution
+as channel network. focal_min 5000m radius at 100m = 50-pixel kernel.
+Result: Computation completed but produced physically incorrect values.
+Festac Town pixels immediately adjacent to canals showed HAND > 13m
+(red/high) rather than expected low values. Root cause: focal_min
+propagates the MINIMUM elevation within search radius — in coastal
+Lagos, this is always the Lagos Lagoon (0m) rather than local canal
+elevation (3-4m). All HAND values relative to lagoon sea level rather
+than nearest local drainage channel, rendering the layer hydrologically
+meaningless for urban flood susceptibility in this coastal setting.
+
+Decision: HAND removed from feature matrix.
+Justification: Correct HAND computation requires a hydrologically
+conditioned DEM (e.g. MERIT DEM or NASADEM with depression filling)
+where sea-level water bodies are treated separately from inland
+drainage channels. SRTM-based HAND in coastal environments with
+large tidal water bodies produces systematically incorrect values.
+Documented as priority for future work.
+
+### Final NB04 Outputs (Three Features)
+- Feature 12: Soil permeability (OpenLandMap sand fraction, 250m)
+  Mean: 25.68% — clay-dominant coastal soils confirming low
+  infiltration capacity and high runoff generation potential
+- Feature 13: Distance to river (HydroSHEDS flow acc threshold,
+  fastDistanceTransform, 500m) — Mean: 2,337.43m
+- Feature 14: Distance to drainage (JRC occurrence > 10%,
+  fastDistanceTransform, 30m) — Mean: 1,207.16m
+
+Export: soil_distance_amuwo_odofin.tif (3 bands, 100m, Float32)
+
+---
+
+## Notebook 04b — GPM IMERG Antecedent Rainfall (Feature 15)
+
+### Dataset
+- Source: NASA/GPM_L3/IMERG_V07 (gauge-calibrated)
+- Band: precipitation (mm/hr) — note: named 'precipitationCal' in
+  older IMERG versions; renamed 'precipitation' in V07
+- Temporal resolution: 30-minute intervals
+- Spatial resolution: 0.1° (~11km at Lagos latitude)
+- Unit conversion: sum(mm/hr) × 0.5hr interval = total mm accumulated
+
+### Antecedent Window Design
+72-hour window immediately preceding each flood event peak date.
+Scientific rationale: 72-hour antecedent rainfall captures soil
+moisture saturation state — the primary determinant of flood response
+magnitude for equivalent rainfall inputs in tropical urban catchments
+(Beven & Kirkby, 1979; Western et al., 2002).
+
+### Event-Specific 72-Hour Antecedent Rainfall
+
+| Event | Window | Images | Min (mm) | Max (mm) | Mean (mm) |
+|-------|--------|--------|----------|----------|-----------|
+| Jul 2017 | 04-07 Jul 2017 | 144 | 110.14 | 134.29 | 126.20 |
+| Jun 2020 | 14-17 Jun 2020 | 144 | 25.94 | 40.65 | 34.01 |
+| Jul 2021 | 13-16 Jul 2021 | 144 | 3.69 | 11.92 | 10.09 |
+| Jul 2022 | 06-09 Jul 2022 | 144 | 48.54 | 84.39 | 58.70 |
+
+### Key Scientific Finding — Event 3 (July 2021)
+Event 3 produced the second-largest flood footprint (14.02% coverage)
+despite only 10.09mm of antecedent rainfall in the preceding 72 hours.
+This indicates the July 2021 flood was driven by intense short-duration
+rainfall overwhelming structurally constrained drainage capacity rather
+than prolonged antecedent soil saturation. This finding demonstrates
+that antecedent rainfall alone does not explain flood occurrence in
+urbanised coastal terrain — structural drainage capacity (captured by
+TWI, flow accumulation, distance to drainage) matters equally.
+SHAP analysis in NB08 will reveal how the model weights GPM IMERG
+relative to terrain conditioning factors.
+
+### Spatial Note
+GPM IMERG at 0.1° (~11km) resolution is coarser than Amuwo Odofin
+LGA extent. The feature contributes event-specific temporal forcing
+information rather than spatial differentiation within the LGA.
+Standard deviation of composite (3.77mm) confirms spatial uniformity.
+
+### Composite Statistics (Feature 15 — Mean Across Four Events)
+
+| Statistic | Value (mm/72hr) |
+|-----------|----------------|
+| Minimum | 48.09 |
+| Maximum | 62.37 |
+| Mean | 57.25 |
+| Std Dev | 3.77 |
+
+### Exports Submitted
+- gpm_antecedent_rainfall_amuwo_odofin.tif → Feature 15 (ML matrix)
+- gpm_rainfall_2017_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2020_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2021_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2022_amuwo_odofin.tif (event-specific)
+
+---
+
+## FINAL FEATURE MATRIX — 15 Features
+
+| # | Feature | Source | NB | Resolution |
+|---|---------|--------|----|------------|
+| 1 | Elevation | SRTM (NASA/USGS) | NB02 | 30m |
+| 2 | Slope | SRTM derived | NB02 | 30m |
+| 3 | Aspect | SRTM derived | NB02 | 30m |
+| 4 | Flow Accumulation | HydroSHEDS (WWF) | NB02 | 500m |
+| 5 | TWI | SRTM + HydroSHEDS | NB02 | 30m |
+| 6 | Curvature | SRTM Laplacian kernel | NB02 | 30m |
+| 7 | Mean Annual Rainfall | CHIRPS 2013-2023 | NB03 | 5km |
+| 8 | Mean Rainy Days/Year | CHIRPS 2013-2023 | NB03 | 5km |
+| 9 | Extreme Rainfall Freq | CHIRPS >50mm/day | NB03 | 5km |
+| 10 | Land Use/Land Cover | ESA WorldCover 2021 | NB03 | 10m |
+| 11 | NDVI | Sentinel-2 2020-2023 | NB03 | 10m |
+| 12 | Soil Permeability | OpenLandMap (USDA) | NB04 | 250m |
+| 13 | Distance to Rivers | HydroSHEDS flow acc | NB04 | 500m |
+| 14 | Distance to Drainage | JRC Surface Water | NB04 | 30m |
+| 15 | GPM IMERG 72hr Rainfall | NASA GPM IMERG V07 | NB04b | 11km |
+
+HAND excluded: SRTM-based HAND computation in coastal environments
+with large tidal water bodies produces systematically incorrect values
+relative to sea-level rather than local drainage. Recommended for
+future work using MERIT DEM or NASADEM with hydrological conditioning.
+
+All 15 features to be resampled to common 100m resolution in NB06.
+
+### GeoTIFF Export Summary — Data Acquisition Phase Complete
+
+| File | Features | Bands | Scale |
+|------|----------|-------|-------|
+| topo_features_amuwo_odofin.tif | F1-F6 | 6 | 30m |
+| rainfall_lulc_ndvi_amuwo_odofin.tif | F7-F11 | 5 | 100m |
+| soil_distance_amuwo_odofin.tif | F12-F14 | 3 | 100m |
+| gpm_antecedent_rainfall_amuwo_odofin.tif | F15 | 1 | 1000m |
+| flood_inventory_amuwo_odofin.tif | Labels | 1 | 30m |
+
+
+---
+
+## Notebook 04 (Revised) — Soil, Distance Features
+
+### HAND Model — Attempted and Removed
+HAND (Height Above Nearest Drainage) was implemented using two approaches:
+
+Attempt 1: HydroSHEDS flow accumulation thresholding at 500m resolution.
+Result: Sparse channel network missed most urban drainage features in
+Amuwo Odofin. Kernel computation at 30m resolution (5000m radius =
+167-pixel kernel) timed out after 37+ minutes without completing.
+
+Attempt 2: JRC Global Surface Water occurrence > 5% at 100m resolution
+as channel network. focal_min 5000m radius at 100m = 50-pixel kernel.
+Result: Computation completed but produced physically incorrect values.
+Festac Town pixels immediately adjacent to canals showed HAND > 13m
+(red/high) rather than expected low values. Root cause: focal_min
+propagates the MINIMUM elevation within search radius — in coastal
+Lagos, this is always the Lagos Lagoon (0m) rather than local canal
+elevation (3-4m). All HAND values relative to lagoon sea level rather
+than nearest local drainage channel, rendering the layer hydrologically
+meaningless for urban flood susceptibility in this coastal setting.
+
+Decision: HAND removed from feature matrix.
+Justification: Correct HAND computation requires a hydrologically
+conditioned DEM (e.g. MERIT DEM or NASADEM with depression filling)
+where sea-level water bodies are treated separately from inland
+drainage channels. SRTM-based HAND in coastal environments with
+large tidal water bodies produces systematically incorrect values.
+Documented as priority for future work.
+
+### Final NB04 Outputs (Three Features)
+- Feature 12: Soil permeability (OpenLandMap sand fraction, 250m)
+  Mean: 25.68% — clay-dominant coastal soils confirming low
+  infiltration capacity and high runoff generation potential
+- Feature 13: Distance to river (HydroSHEDS flow acc threshold,
+  fastDistanceTransform, 500m) — Mean: 2,337.43m
+- Feature 14: Distance to drainage (JRC occurrence > 10%,
+  fastDistanceTransform, 30m) — Mean: 1,207.16m
+
+Export: soil_distance_amuwo_odofin.tif (3 bands, 100m, Float32)
+
+---
+
+## Notebook 04b — GPM IMERG Antecedent Rainfall (Feature 15)
+
+### Dataset
+- Source: NASA/GPM_L3/IMERG_V07 (gauge-calibrated)
+- Band: precipitation (mm/hr) — note: named 'precipitationCal' in
+  older IMERG versions; renamed 'precipitation' in V07
+- Temporal resolution: 30-minute intervals
+- Spatial resolution: 0.1° (~11km at Lagos latitude)
+- Unit conversion: sum(mm/hr) × 0.5hr interval = total mm accumulated
+
+### Antecedent Window Design
+72-hour window immediately preceding each flood event peak date.
+Scientific rationale: 72-hour antecedent rainfall captures soil
+moisture saturation state — the primary determinant of flood response
+magnitude for equivalent rainfall inputs in tropical urban catchments
+(Beven & Kirkby, 1979; Western et al., 2002).
+
+### Event-Specific 72-Hour Antecedent Rainfall
+
+| Event | Window | Images | Min (mm) | Max (mm) | Mean (mm) |
+|-------|--------|--------|----------|----------|-----------|
+| Jul 2017 | 04-07 Jul 2017 | 144 | 110.14 | 134.29 | 126.20 |
+| Jun 2020 | 14-17 Jun 2020 | 144 | 25.94 | 40.65 | 34.01 |
+| Jul 2021 | 13-16 Jul 2021 | 144 | 3.69 | 11.92 | 10.09 |
+| Jul 2022 | 06-09 Jul 2022 | 144 | 48.54 | 84.39 | 58.70 |
+
+### Key Scientific Finding — Event 3 (July 2021)
+Event 3 produced the second-largest flood footprint (14.02% coverage)
+despite only 10.09mm of antecedent rainfall in the preceding 72 hours.
+This indicates the July 2021 flood was driven by intense short-duration
+rainfall overwhelming structurally constrained drainage capacity rather
+than prolonged antecedent soil saturation. This finding demonstrates
+that antecedent rainfall alone does not explain flood occurrence in
+urbanised coastal terrain — structural drainage capacity (captured by
+TWI, flow accumulation, distance to drainage) matters equally.
+SHAP analysis in NB08 will reveal how the model weights GPM IMERG
+relative to terrain conditioning factors.
+
+### Spatial Note
+GPM IMERG at 0.1° (~11km) resolution is coarser than Amuwo Odofin
+LGA extent. The feature contributes event-specific temporal forcing
+information rather than spatial differentiation within the LGA.
+Standard deviation of composite (3.77mm) confirms spatial uniformity.
+
+### Composite Statistics (Feature 15 — Mean Across Four Events)
+
+| Statistic | Value (mm/72hr) |
+|-----------|----------------|
+| Minimum | 48.09 |
+| Maximum | 62.37 |
+| Mean | 57.25 |
+| Std Dev | 3.77 |
+
+### Exports Submitted
+- gpm_antecedent_rainfall_amuwo_odofin.tif → Feature 15 (ML matrix)
+- gpm_rainfall_2017_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2020_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2021_amuwo_odofin.tif (event-specific)
+- gpm_rainfall_2022_amuwo_odofin.tif (event-specific)
+
+---
+
+## FINAL FEATURE MATRIX — 15 Features
+
+| # | Feature | Source | NB | Resolution |
+|---|---------|--------|----|------------|
+| 1 | Elevation | SRTM (NASA/USGS) | NB02 | 30m |
+| 2 | Slope | SRTM derived | NB02 | 30m |
+| 3 | Aspect | SRTM derived | NB02 | 30m |
+| 4 | Flow Accumulation | HydroSHEDS (WWF) | NB02 | 500m |
+| 5 | TWI | SRTM + HydroSHEDS | NB02 | 30m |
+| 6 | Curvature | SRTM Laplacian kernel | NB02 | 30m |
+| 7 | Mean Annual Rainfall | CHIRPS 2013-2023 | NB03 | 5km |
+| 8 | Mean Rainy Days/Year | CHIRPS 2013-2023 | NB03 | 5km |
+| 9 | Extreme Rainfall Freq | CHIRPS >50mm/day | NB03 | 5km |
+| 10 | Land Use/Land Cover | ESA WorldCover 2021 | NB03 | 10m |
+| 11 | NDVI | Sentinel-2 2020-2023 | NB03 | 10m |
+| 12 | Soil Permeability | OpenLandMap (USDA) | NB04 | 250m |
+| 13 | Distance to Rivers | HydroSHEDS flow acc | NB04 | 500m |
+| 14 | Distance to Drainage | JRC Surface Water | NB04 | 30m |
+| 15 | GPM IMERG 72hr Rainfall | NASA GPM IMERG V07 | NB04b | 11km |
+
+HAND excluded: SRTM-based HAND computation in coastal environments
+with large tidal water bodies produces systematically incorrect values
+relative to sea-level rather than local drainage. Recommended for
+future work using MERIT DEM or NASADEM with hydrological conditioning.
+
+All 15 features to be resampled to common 100m resolution in NB06.
+
+### GeoTIFF Export Summary — Data Acquisition Phase Complete
+
+| File | Features | Bands | Scale |
+|------|----------|-------|-------|
+| topo_features_amuwo_odofin.tif | F1-F6 | 6 | 30m |
+| rainfall_lulc_ndvi_amuwo_odofin.tif | F7-F11 | 5 | 100m |
+| soil_distance_amuwo_odofin.tif | F12-F14 | 3 | 100m |
+| gpm_antecedent_rainfall_amuwo_odofin.tif | F15 | 1 | 1000m |
+| flood_inventory_amuwo_odofin.tif | Labels | 1 | 30m |
+
