@@ -949,3 +949,150 @@ urban land surfaces — no flood classifications on Lagos Lagoon,
 Badagry Creek, canals, or tidal inlets. Water body contamination
 problem fully resolved.
 
+
+---
+
+## Notebook 06 — Feature Matrix Assembly
+
+### Raster Metadata (Pre-Resampling)
+| Dataset | Bands | Resolution | Dimensions | CRS |
+|---------|-------|-----------|------------|-----|
+| topo_features | 6 | 30m | 687×489 | EPSG:4326 |
+| rainfall_lulc_ndvi | 5 | 100m | 206×147 | EPSG:4326 |
+| soil_distance | 3 | 100m | 206×147 | EPSG:4326 |
+| gpm_antecedent_rainfall | 1 | 499m | 42×30 | EPSG:4326 |
+
+### Resampling
+- Target resolution: 0.0009° ≈ 100m at Lagos latitude
+- Target CRS: EPSG:4326
+- Method: bilinear interpolation for all continuous features
+- Exception: nearest-neighbour for rainfall_lulc_ndvi stack
+  (contains LULC categorical band — bilinear would produce
+  non-integer values not corresponding to valid land cover classes)
+- Post-resampling dimensions: 206×147 for all stacks except
+  GPM (210×150 — slightly extended bounds from 500m native resolution)
+
+### Training Points CSV
+- File: training_points_amuwo_odofin.csv
+- Shape: 10,000 rows × 3 columns
+- Columns: system:index, flood_label, .geo (GeoJSON coordinates)
+- Label distribution: 5,000 flood (1), 5,000 non-flood (0) — 50:50
+
+### NB05 Training Label Bug — Documented
+- Original export produced 10,000 flood labels (0 non-flood)
+- Root cause: .selfMask() on binary image converts all kept pixels
+  to value 1 regardless of intended class — non-flood pixels
+  exported with flood_label=1 instead of 0
+- Fix: explicit ee.Image(0) remapping before stratifiedSample()
+- Verified: system:index prefix 1_ = flood, 2_ = non-flood
+- Re-export confirmed correct distribution
+
+### Spatial Join Results — Feature Values at 10,000 Sample Points
+All 15 features extracted successfully via rasterio.sample():
+
+| Feature | Min | Max | Mean |
+|---------|-----|-----|------|
+| elevation | -10.57m | 22.80m | 6.57m |
+| slope | 0.38° | 19.70° | 2.80° |
+| aspect | 7.48° | 292.01° | 161.65° |
+| flow_accumulation | 1.00 | 707.04 | 34.80 |
+| twi | 1.93 | 11.14 | 4.46 |
+| curvature | -8.12 | 9.68 | -0.05 |
+| mean_annual_rainfall | 1,509.21mm | 1,885.31mm | 1,633.75mm |
+| mean_rainy_days | 121.90 | 128.60 | 124.71 |
+| extreme_rain_freq | 1.20 | 3.40 | 1.65 |
+| lulc | 10 | 95 | 43.07 |
+| ndvi | -0.08 | 0.74 | 0.27 |
+| soil_permeability | 15.00% | 35.50% | 26.47% |
+| distance_to_river | 0.00m | 29,302.17m | 9,653.46m |
+| distance_to_drainage | 0.00m | 2,041.51m | 460.09m |
+| gpm_antecedent_rainfall | 48.09mm | 64.49mm | 57.62mm |
+
+Note on distance_to_river max (29,302m): reflects sparse HydroSHEDS
+channel network from flow accumulation thresholding. Some points
+far from identified channels. Does not affect model training.
+
+### Missing Values and Cleaning
+| Feature | Missing | % |
+|---------|---------|---|
+| elevation | 442 | 4.42% |
+| slope | 576 | 5.76% |
+| aspect | 576 | 5.76% |
+| flow_accumulation | 507 | 5.07% |
+| twi | 625 | 6.25% |
+| curvature | 442 | 4.42% |
+| mean_annual_rainfall | 6 | 0.06% |
+| mean_rainy_days | 6 | 0.06% |
+| extreme_rain_freq | 6 | 0.06% |
+| soil_permeability | 628 | 6.28% |
+| distance_to_river | 60 | 0.60% |
+| distance_to_drainage | 60 | 0.60% |
+| gpm_antecedent_rainfall | 301 | 3.01% |
+| lulc | 0 | 0.00% |
+| ndvi | 0 | 0.00% |
+
+Missing value cause: raster boundary edge pixels where clipping
+produced incomplete cells at LGA margin. Standard spatial join
+artefact — not a data quality failure.
+
+Rows removed: 1,161 (11.61%)
+Final dataset: 8,839 rows
+Post-cleaning class balance: 4,455 flood (50.4%) / 4,384 non-flood (49.6%)
+
+### Multicollinearity Analysis
+
+#### Highly Correlated Pairs (|r| > 0.7)
+1. flow_accumulation ↔ twi: r = 0.771
+   Explanation: TWI is mathematically derived from flow accumulation.
+   Correlation moderated by slope — both features retained as they
+   capture different aspects of hydrological saturation potential.
+
+2. mean_annual_rainfall ↔ extreme_rain_freq: r = 0.871
+   Explanation: climatological link — areas with higher total annual
+   rainfall experience more extreme rainfall days. Both features
+   retained; tree model SHAP will reveal relative importance.
+
+#### VIF Analysis Results
+| Feature | VIF | Status |
+|---------|-----|--------|
+| mean_annual_rainfall | 1,552.87 | HIGH |
+| mean_rainy_days | 1,535.67 | HIGH |
+| gpm_antecedent_rainfall | 663.29 | HIGH |
+| soil_permeability | 121.34 | HIGH |
+| extreme_rain_freq | 86.37 | HIGH |
+| twi | 29.72 | HIGH |
+| aspect | 20.11 | HIGH |
+| lulc | 14.60 | HIGH |
+| slope | 10.93 | HIGH |
+| elevation | 7.58 | MODERATE |
+| distance_to_river | 7.09 | MODERATE |
+| ndvi | 6.76 | MODERATE |
+| distance_to_drainage | 5.27 | MODERATE |
+| flow_accumulation | 3.83 | ACCEPTABLE |
+| curvature | 1.19 | ACCEPTABLE |
+
+VIF Interpretation:
+Extreme VIF values for rainfall features reflect spatial uniformity
+of coarser-resolution datasets (CHIRPS 5km, GPM 11km) across the
+small LGA extent (15km × 13km). At this scale, low within-study-area
+variance inflates VIF estimates without reducing predictive value.
+This is a known phenomenon in local-scale geospatial ML studies.
+
+Action taken:
+- Tree-based models (RF, XGBoost): no action — immune to multicollinearity
+- Logistic Regression: coefficients reported but not used for feature
+  importance interpretation. SHAP analysis is the primary interpretability
+  framework for all three models.
+- No features removed — all 15 retained for consistent model comparison
+
+Notable: curvature (VIF=1.19) and flow_accumulation (VIF=3.83) are
+the most independent features in the matrix — watch for prominence
+in SHAP analysis.
+
+### Final Feature Matrix
+- File: data/feature_matrix.csv and outputs/feature_matrix.csv
+- Shape: 8,839 rows × 18 columns
+- Columns: longitude, latitude, flood_label + 15 features
+- Class balance: 50.4% flood / 49.6% non-flood
+- Correlation figure: outputs/figures/correlation_matrix.png
+
