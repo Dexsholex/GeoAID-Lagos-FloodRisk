@@ -1096,3 +1096,94 @@ in SHAP analysis.
 - Class balance: 50.4% flood / 49.6% non-flood
 - Correlation figure: outputs/figures/correlation_matrix.png
 
+
+---
+
+## Notebook 07 — Model Training and Evaluation
+
+### Feature Set Decision — distance_to_river Removed
+Initial training used 15 features. Diagnostic investigation revealed
+distance_to_river was physically invalid:
+- Max distance 28,638m exceeds LGA dimensions (~15km across)
+- Median 9,899m — half of all points supposedly >10km from a river
+- Compare distance_to_drainage (JRC 30m): max 2,000m, mean 476m
+Root cause: HydroSHEDS river network at 500m resolution identifies
+almost no channels within the small LGA, producing meaningless large
+distances. distance_to_drainage (JRC, denser 30m network) is the valid
+replacement capturing the same conditioning concept correctly.
+
+Feature importance confirmed distance_to_river ranked 4th (0.0879)
+despite being broken — actively contributing spatial noise. Removal
+improved spatial CV recall (0.3419 → 0.3678) and F1 (0.4251 → 0.4454)
+while holding random-split performance flat (ROC-AUC 0.7994 → 0.7979,
+OOB 0.7210 → 0.7247). Final feature count: 14.
+
+### Final Feature Set (14)
+elevation, slope, aspect, flow_accumulation, twi, curvature,
+mean_annual_rainfall, mean_rainy_days, extreme_rain_freq, lulc, ndvi,
+soil_permeability, distance_to_drainage, gpm_antecedent_rainfall
+
+### Training Configuration
+- Dataset: 8,839 samples (4,455 flood / 4,384 non-flood, 50.4/49.6%)
+- Split: 70:30 stratified, random_state=42
+- Train: 6,187 | Test: 2,652
+- StandardScaler applied to Logistic Regression only (tree models scale-invariant)
+
+### Model Performance — Random Split (70:30)
+| Model | Accuracy | Precision | Recall | F1 | ROC-AUC |
+|-------|----------|-----------|--------|-----|---------|
+| Logistic Regression | 0.5969 | 0.5868 | 0.6776 | 0.6289 | 0.6431 |
+| Random Forest | 0.7281 | 0.7194 | 0.7554 | 0.7370 | 0.7979 |
+| XGBoost | 0.7006 | 0.6903 | 0.7367 | 0.7127 | 0.7674 |
+
+Selected model: Random Forest (best on all metrics)
+
+### Confusion Matrices (Test Set, n=2,652)
+Logistic Regression: TN=677 FP=638 FN=431 TP=906
+Random Forest:       TN=921 FP=394 FN=327 TP=1010
+XGBoost:             TN=873 FP=442 FN=352 TP=985
+
+### OOB Convergence Verification
+OOB error stabilised by 150 trees (0.2743) with negligible change to
+200 trees (0.2753). Confirms n_estimators=200 (Chapter 3 claim verified).
+RF OOB score 0.7247 closely matches test accuracy 0.7281 — no overfitting.
+
+### Spatial K-Fold Cross-Validation (5x5 grid, 5-fold)
+| Model | Accuracy | Recall | F1 | ROC-AUC |
+|-------|----------|--------|-----|---------|
+| Logistic Regression | 0.6011±0.020 | 0.6429±0.200 | 0.5998±0.119 | 0.6393±0.030 |
+| Random Forest | 0.5663±0.033 | 0.3678±0.142 | 0.4454±0.105 | 0.6422±0.018 |
+| XGBoost | 0.5744±0.022 | 0.4438±0.153 | 0.4958±0.118 | 0.6259±0.017 |
+
+### Spatial CV Gap — Interpretation (CRITICAL for viva)
+Random Forest random-split ROC-AUC (0.7979) vs spatial-CV ROC-AUC (0.6422):
+gap of ~0.16 reflects spatial autocorrelation leakage in random splitting.
+Diagnosed causes (evidence-based):
+1. Small study area (15x13km) — CHIRPS (5km) and GPM (11km) rainfall
+   features near-spatially-constant. Feature importance confirms all four
+   rainfall features contribute <0.02 each (~6% combined) — minimal spatial
+   discriminative signal at this scale.
+2. Spatially clustered flooding — block composition analysis shows flood
+   pixels concentrated in blocks 6,8,11,13 (60-70% flood) vs blocks 0,4
+   (<20%). Holding out flood-dense blocks removes most flood training
+   examples, causing recall collapse and high variance (±0.14).
+3. Only 21 populated blocks over small area — spatial CV estimates
+   themselves unstable (wide standard deviations).
+Conclusion: spatial CV gap is substantially a small-area sampling artefact,
+not model failure. Reported honestly in Chapter 4 as evidence of
+methodological rigour. Most published flood susceptibility studies report
+only inflated random-split numbers and never run spatial CV.
+
+### Feature Importance (Gini, Random Forest — diagnostic only)
+ndvi (0.159), distance_to_drainage (0.093), elevation (0.090),
+soil_permeability (0.083), curvature (0.083), aspect (0.082),
+twi (0.082), slope (0.079), flow_accumulation (0.057), lulc (0.036),
+rainfall features all <0.02. NDVI dominance is physically sensible —
+low NDVI marks impervious built-up surfaces where urban flooding
+concentrates. SHAP analysis (NB08) is the primary interpretability tool;
+Gini importance retained here for diagnostic transparency only.
+
+### Models Saved
+models/logistic_regression.pkl, models/random_forest.pkl,
+models/xgboost.pkl, models/scaler.pkl
+
