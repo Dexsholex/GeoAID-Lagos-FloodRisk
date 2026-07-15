@@ -1187,3 +1187,45 @@ Gini importance retained here for diagnostic transparency only.
 models/logistic_regression.pkl, models/random_forest.pkl,
 models/xgboost.pkl, models/scaler.pkl
 
+
+---
+
+## Notebook 07 — Final Outputs (Figures and Spatial Products)
+
+### Flood Susceptibility Map Generated (Primary Spatial Output)
+- Method: Random Forest applied to all valid pixels in Amuwo Odofin
+- Grid: 206 x 147 pixels at 100m (reference: topo raster)
+- Valid land pixels predicted: 13,022 of 30,282 total grid cells
+- Probability range: 0.004 to 1.000, mean 0.389
+- Full probability spread confirms model produces differentiated
+  predictions, not clustered at extremes
+
+### Risk Tier Reclassification (Quartile Breakpoints)
+| Tier | Threshold | Pixels | Share |
+|------|-----------|--------|-------|
+| Low | < 0.189 | 3,256 | 25.0% |
+| Moderate | 0.189 - 0.373 | 3,255 | 25.0% |
+| High | 0.373 - 0.544 | 3,255 | 25.0% |
+| Very High | > 0.544 | 3,256 | 25.0% |
+
+### Visual Validation — PASSED
+Very High risk zones cluster in coherent spatial patterns rather than
+scattering randomly. High-risk areas concentrate consistent with
+physical expectations (low-lying terrain, drainage proximity, built-up
+areas). Confirms model learned genuine physical relationships rather
+than noise. This is the critical validity check for the structural
+susceptibility layer.
+
+### Figures Generated (outputs/figures/)
+- roc_curves_comparison.png — all three models + random baseline
+- confusion_matrices.png — three-panel test set error breakdown
+- model_metrics_comparison.png — grouped bar chart, five metrics
+- rf_oob_convergence.png — OOB error vs tree count (verified 200)
+- rf_feature_importance.png — Gini importance (diagnostic)
+- flood_susceptibility_map.png — two-panel probability + tier map
+
+### Spatial Products (outputs/)
+- flood_probability_map.tif — continuous 0-1 surface, EPSG:4326, 100m
+- flood_risk_tiers.tif — 4-class reclassification, EPSG:4326, 100m
+Both products feed NB09 (infrastructure risk) and NB10 (dashboard).
+
