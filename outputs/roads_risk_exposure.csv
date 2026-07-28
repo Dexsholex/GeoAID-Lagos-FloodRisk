@@ -1,0 +1,209 @@
+osm_id,name,category,risk_tier,risk_label
+92439803,7th Avenue,road,3.0,High
+92439806,Ago Okota Expressway,road,2.0,Moderate
+92439807,New Festac Bridge Road,road,4.0,Very High
+92439817,Unnamed,road,3.0,High
+92439842,5th Avenue,road,2.0,Moderate
+113520309,Unnamed,road,3.0,High
+113520311,Unnamed,road,4.0,Very High
+113521673,Unnamed,road,2.0,Moderate
+113522926,Unnamed,road,4.0,Very High
+113526400,Unnamed,road,0.0,NoData
+134164083,Unnamed,road,0.0,NoData
+134164084,Unnamed,road,0.0,NoData
+134164085,Unnamed,road,0.0,NoData
+134164086,Unnamed,road,0.0,NoData
+134164088,Unnamed,road,0.0,NoData
+134164089,Unnamed,road,0.0,NoData
+134164090,Unnamed,road,0.0,NoData
+134164092,Unnamed,road,0.0,NoData
+134164093,Unnamed,road,4.0,Very High
+134164094,Unnamed,road,0.0,NoData
+134164095,Unnamed,road,4.0,Very High
+134164096,Unnamed,road,0.0,NoData
+134164098,Unnamed,road,0.0,NoData
+134164101,Unnamed,road,4.0,Very High
+134164103,Unnamed,road,0.0,NoData
+134164104,Unnamed,road,4.0,Very High
+134165690,Unnamed,road,0.0,NoData
+134165694,Unnamed,road,0.0,NoData
+134165696,Unnamed,road,4.0,Very High
+134165699,Unnamed,road,0.0,NoData
+134165701,Unnamed,road,0.0,NoData
+134165704,Unnamed,road,4.0,Very High
+134165706,Unnamed,road,0.0,NoData
+137631591,Unnamed,road,2.0,Moderate
+144077057,2nd Avenue,road,4.0,Very High
+144077062,Unnamed,road,4.0,Very High
+144077065,2nd Avenue,road,4.0,Very High
+144077078,New Festac Bridge Road,road,4.0,Very High
+144077081,Unnamed,road,4.0,Very High
+144077086,Unnamed,road,4.0,Very High
+144077088,Unnamed,road,4.0,Very High
+144077092,Unnamed,road,4.0,Very High
+144077094,New Festac Bridge Road,road,4.0,Very High
+144077095,Unnamed,road,4.0,Very High
+144077096,Unnamed,road,4.0,Very High
+144077103,1st Avenue,road,1.0,Low
+144077111,New Festac Bridge Road,road,4.0,Very High
+144077112,2nd Avenue,road,4.0,Very High
+144077113,2nd Avenue,road,4.0,Very High
+144077121,Unnamed,road,4.0,Very High
+144077129,1st Avenue,road,1.0,Low
+144077130,1st Avenue,road,3.0,High
+144077133,1st Avenue,road,3.0,High
+144077141,Unnamed,road,4.0,Very High
+144077143,Unnamed,road,4.0,Very High
+144077144,New Festac Bridge Road,road,0.0,NoData
+144077147,Unnamed,road,4.0,Very High
+144077149,Unnamed,road,4.0,Very High
+144077155,Unnamed,road,4.0,Very High
+144077156,2nd Avenue,road,4.0,Very High
+144077157,Unnamed,road,4.0,Very High
+215641709,Unnamed,road,4.0,Very High
+215641714,Unnamed,road,3.0,High
+215641719,Unnamed,road,3.0,High
+215641727,Unnamed,road,0.0,NoData
+215641729,Unnamed,road,4.0,Very High
+215641730,Unnamed,road,4.0,Very High
+215641740,Unnamed,road,3.0,High
+215641741,Unnamed,road,4.0,Very High
+215641743,Unnamed,road,3.0,High
+216239503,Ago Okota Expressway,road,2.0,Moderate
+216239512,Ago Okota Expressway,road,0.0,NoData
+216239514,Ago Palace Way,road,3.0,High
+216239516,Ago Okota Expressway,road,0.0,NoData
+216239519,Ago Palace Way,road,3.0,High
+216239520,New Festac Bridge Road,road,4.0,Very High
+220625549,Unnamed,road,4.0,Very High
+220639910,Unnamed,road,3.0,High
+280307452,Unnamed,road,3.0,High
+281423985,Unnamed,road,3.0,High
+295045439,Unnamed,road,3.0,High
+295045646,Unnamed,road,1.0,Low
+437054891,Unnamed,road,3.0,High
+437054896,Unnamed,road,2.0,Moderate
+535372284,Ago Palace Way,road,3.0,High
+535372285,Ago Palace Way,road,0.0,NoData
+535662454,Ago Palace Way,road,4.0,Very High
+567272067,Unnamed,road,4.0,Very High
+567272068,Unnamed,road,3.0,High
+567272069,Unnamed,road,4.0,Very High
+567272071,Unnamed,road,4.0,Very High
+567272073,Unnamed,road,4.0,Very High
+567272074,Unnamed,road,3.0,High
+569602221,Unnamed,road,1.0,Low
+569717162,Unnamed,road,2.0,Moderate
+569997383,2nd Avenue,road,4.0,Very High
+569997393,2nd Avenue,road,4.0,Very High
+570006226,Unnamed,road,2.0,Moderate
+570262835,Unnamed,road,4.0,Very High
+570972532,Oluwalose Street,road,0.0,NoData
+570972533,Oluwalose Street,road,0.0,NoData
+570972534,Oluwalose Street,road,0.0,NoData
+581920132,Unnamed,road,0.0,NoData
+581920133,Unnamed,road,0.0,NoData
+585291004,Unnamed,road,4.0,Very High
+586659741,Unnamed,road,0.0,NoData
+587994254,Unnamed,road,4.0,Very High
+588035333,Unnamed,road,4.0,Very High
+588532475,Unnamed,road,3.0,High
+588649404,Unnamed,road,2.0,Moderate
+588649407,Unnamed,road,4.0,Very High
+606872230,Unnamed,road,4.0,Very High
+606872231,Unnamed,road,4.0,Very High
+655839170,Unnamed,road,4.0,Very High
+655839171,Unnamed,road,4.0,Very High
+655839172,Unnamed,road,4.0,Very High
+655839173,Unnamed,road,3.0,High
+655839174,Unnamed,road,4.0,Very High
+713054656,Unnamed,road,2.0,Moderate
+713054657,Isheri- Osun Road 2,road,3.0,High
+716054783,Unnamed,road,2.0,Moderate
+716054784,Isheri - Osun Road,road,3.0,High
+726124474,Lagos-Badagry Expressway,road,4.0,Very High
+726124475,Lagos-Badagry Expressway,road,3.0,High
+726609333,Lagos-Badagry Expressway,road,3.0,High
+738108770,Lagos-Badagry Expressway,road,2.0,Moderate
+739710387,Lagos-Badagry Expressway,road,4.0,Very High
+785033125,Lagos-Badagry Expressway,road,4.0,Very High
+786387680,Unnamed,road,3.0,High
+786387681,Baale road,road,3.0,High
+795977402,Unnamed,road,4.0,Very High
+822085847,Unnamed,road,2.0,Moderate
+828825099,Unnamed,road,3.0,High
+828825101,Lagos-Badagry Expressway,road,3.0,High
+828825102,Unnamed,road,4.0,Very High
+829181533,Lagos-Badagry Expressway,road,2.0,Moderate
+829181534,Unnamed,road,4.0,Very High
+829181538,Lagos-Badagry Expressway,road,4.0,Very High
+829181540,Lagos-Badagry Expressway,road,4.0,Very High
+829181543,Lagos-Badagry Expressway,road,4.0,Very High
+829181545,Lagos-Badagry Expressway,road,4.0,Very High
+829181548,Unnamed,road,4.0,Very High
+829181550,Unnamed,road,4.0,Very High
+829181552,Unnamed,road,4.0,Very High
+829181554,Unnamed,road,4.0,Very High
+829181555,Unnamed,road,4.0,Very High
+829181556,Unnamed,road,2.0,Moderate
+829181557,Lagos-Badagry Expressway,road,4.0,Very High
+829181559,Lagos-Badagry Expressway,road,4.0,Very High
+829181560,Unnamed,road,4.0,Very High
+829181561,Lagos-Badagry Expressway,road,4.0,Very High
+829181564,Lagos-Badagry Expressway,road,4.0,Very High
+829181565,Unnamed,road,2.0,Moderate
+829181566,Lagos-Badagry Expressway,road,3.0,High
+829181567,Unnamed,road,4.0,Very High
+829181569,Unnamed,road,4.0,Very High
+829181571,Lagos-Badagry Expressway,road,4.0,Very High
+829243080,Lagos-Badagry Expressway,road,4.0,Very High
+829243081,Lagos-Badagry Expressway,road,4.0,Very High
+829243083,Lagos-Badagry Expressway,road,3.0,High
+829243085,Lagos-Badagry Expressway,road,4.0,Very High
+833815004,Lagos-Badagry Expressway,road,4.0,Very High
+833815005,Lagos-Badagry Expressway,road,4.0,Very High
+833816489,Unnamed,road,1.0,Low
+835704498,Unnamed,road,4.0,Very High
+893293869,Lagos-Badagry Expressway,road,4.0,Very High
+893293870,Lagos-Badagry Expressway,road,4.0,Very High
+893293871,Lagos-Badagry Expressway,road,0.0,NoData
+893293885,Lagos-Badagry Expressway,road,2.0,Moderate
+893293886,Lagos-Badagry Expressway,road,3.0,High
+893293887,Unnamed,road,4.0,Very High
+893293888,Unnamed,road,2.0,Moderate
+893293889,Unnamed,road,4.0,Very High
+893293890,Unnamed,road,4.0,Very High
+893293892,Lagos-Badagry Expressway,road,4.0,Very High
+893293898,Lagos-Badagry Expressway,road,4.0,Very High
+893293900,Lagos-Badagry Expressway,road,4.0,Very High
+893293902,Lagos-Badagry Expressway,road,4.0,Very High
+1043797274,7th Avenue,road,4.0,Very High
+1043797283,2nd Avenue,road,3.0,High
+1043797284,2nd Avenue,road,3.0,High
+1061807533,Unnamed,road,4.0,Very High
+1061807534,Unnamed,road,4.0,Very High
+1061807535,Unnamed,road,4.0,Very High
+1218922114,Unnamed,road,4.0,Very High
+1218922115,Unnamed,road,4.0,Very High
+1218922116,Unnamed,road,3.0,High
+1268568500,Unnamed,road,2.0,Moderate
+1268612702,Unnamed,road,4.0,Very High
+1268612703,Unnamed,road,4.0,Very High
+1268612704,Unnamed,road,2.0,Moderate
+1268612705,Unnamed,road,2.0,Moderate
+1318465960,Unnamed,road,4.0,Very High
+1318465961,Unnamed,road,4.0,Very High
+1340345470,4th Avenue,road,4.0,Very High
+1353975509,Unnamed,road,4.0,Very High
+1364948395,Unnamed,road,4.0,Very High
+1364948396,Unnamed,road,2.0,Moderate
+1364948397,Unnamed,road,4.0,Very High
+1369158145,Unnamed,road,0.0,NoData
+1413221048,Unnamed,road,3.0,High
+1432503700,Unnamed,road,0.0,NoData
+1432503701,Unnamed,road,2.0,Moderate
+1433254508,4th Avenue,road,4.0,Very High
+1486767410,Unnamed,road,3.0,High
+1486767411,Unnamed,road,4.0,Very High
+1489661251,Unnamed,road,3.0,High
+1511789391,Unnamed,road,3.0,High

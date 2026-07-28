@@ -1371,3 +1371,57 @@ study has provided.
 - models/shap_values.npy
 - models/shap_explainer.pkl
 
+
+---
+
+## Notebook 09 — Infrastructure Risk Assessment (Layer 3)
+
+### Critical Correction — Boundary Contamination
+The raster reference grid used a rectangular bounding box 1.71x larger
+in area than the true Amuwo Odofin LGA polygon (FAO GAUL). Initial OSM
+Overpass queries used this oversized bbox, pulling in infrastructure
+from adjacent LGAs. 58 of 93 schools initially returned were outside
+the true LGA boundary. All infrastructure and population analysis was
+corrected to clip against the true LGA polygon via shapely point-in-
+polygon filtering before risk tier assignment. Model raster coverage
+within the true LGA boundary improved from an apparent 43% to 73.6%,
+consistent with expected NB06 boundary-edge NaN effects only.
+
+### OSM Data Acquisition
+Source: Overpass API (public mirrors, with Content-Type/User-Agent
+header fix for 406 rejection). Buildings capped at 20,000 (random
+sample, seed=42) from 293,009 raw results for computational
+tractability — representative for exposure PROPORTION estimation,
+not a complete building census.
+
+### Infrastructure Exposure (within true LGA boundary, reproduced twice)
+| Asset | Total | Low | Moderate | High | Very High | NoData |
+|-------|-------|-----|----------|------|-----------|--------|
+| Schools | 35 | 1 | 4 | 5 | 11 | 14 |
+| Health facilities | 102 | 12 | 24 | 33 | 22 | 11 |
+| Buildings (sample) | 8,162 | 472 | 1,757 | 2,662 | 2,443 | 828 |
+| Major roads | 208 | 5 | 23 | 39 | 109 | 32 |
+
+At-risk (High + Very High): 16 schools, 55 health facilities, 148 roads
+
+### Population Exposure (WorldPop 2020, true LGA boundary)
+NaN handling: WorldPop reports NaN for zero-population pixels (standard
+behaviour, confirmed via diagnostic — min value 3.04, no negative
+sentinels) — converted to 0 before summation.
+| Tier | Population | Share |
+|------|-----------|-------|
+| Low | 57,200 | 12.9% |
+| Moderate | 88,696 | 20.0% |
+| High | 106,941 | 24.1% |
+| Very High | 122,461 | 27.5% |
+
+Total population (true LGA): 444,564
+Population in High + Very High risk: 229,402 (51.6%)
+
+### Outputs
+- outputs/figures/infrastructure_risk_map.png
+- outputs/schools_risk_exposure.csv
+- outputs/health_risk_exposure.csv
+- outputs/roads_risk_exposure.csv
+- outputs/population_exposure.csv
+
