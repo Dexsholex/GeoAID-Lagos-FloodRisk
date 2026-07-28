@@ -1229,3 +1229,74 @@ susceptibility layer.
 - flood_risk_tiers.tif — 4-class reclassification, EPSG:4326, 100m
 Both products feed NB09 (infrastructure risk) and NB10 (dashboard).
 
+
+---
+
+## Notebook 08 — SHAP Explainability Analysis
+
+### Configuration
+- Model explained: Random Forest (selected model, 14 features)
+- Method: TreeExplainer (exact SHAP values for tree ensembles)
+- Test set: full 2,652 samples (unconstrained-depth trees increased
+  computation to ~7-8 minutes — expected given max_depth=None)
+- Split verified identical to NB07 (ROC-AUC 0.7979 exact match)
+
+### Base Rate
+Expected value (base rate): 0.5007 — reflects the deliberately balanced
+50:50 flood/non-flood sampling design in NB05, not the true areal
+prevalence of flooding across Amuwo Odofin.
+
+### Global SHAP Feature Importance (Mean |SHAP value|)
+| Rank | Feature | Mean |SHAP| |
+|------|---------|-------------|
+| 1 | ndvi | 0.0737 |
+| 2 | elevation | 0.0361 |
+| 3 | lulc | 0.0259 |
+| 4 | distance_to_drainage | 0.0248 |
+| 5 | soil_permeability | 0.0233 |
+| 6 | aspect | 0.0168 |
+| 7 | flow_accumulation | 0.0168 |
+| 8 | curvature | 0.0150 |
+| 9 | twi | 0.0149 |
+| 10 | slope | 0.0132 |
+| 11 | mean_rainy_days | 0.0100 |
+| 12 | extreme_rain_freq | 0.0083 |
+| 13 | mean_annual_rainfall | 0.0075 |
+| 14 | gpm_antecedent_rainfall | 0.0057 |
+
+### Cross-Validation Against Gini Importance (NB07)
+SHAP ranking broadly confirms Gini importance from NB07, with NDVI
+dominant under both methods (Gini 0.159, SHAP 0.0737 — more than double
+the second-ranked feature in both cases). This convergence across two
+independent methods strengthens confidence that NDVI's importance is a
+genuine signal rather than an algorithm-specific artefact. All four
+rainfall features rank lowest under both methods, consistent with the
+NB06 VIF finding that CHIRPS (5km) and GPM IMERG (11km) are too
+spatially coarse to differentiate risk within the 15km LGA extent.
+Triangulation across VIF, Gini, and SHAP constitutes strong converging
+evidence for this interpretation.
+
+### Local Explanation — Highest Confidence Prediction
+Test point with predicted flood probability 1.000 (actual label: Flood).
+Every feature contributed positively toward the flood classification —
+no feature pulled the prediction down. Top contributors:
+- ndvi = 0.09                  → SHAP +0.1442
+- distance_to_drainage = 26.02m → SHAP +0.1414
+- elevation = 2.24m            → SHAP +0.0662
+Physical interpretation: near-zero vegetation cover (impervious surface),
+close proximity to drainage network, and low elevation combine to
+produce near-certain flood classification. This demonstrates the local
+explainability capability that no prior Nigerian flood susceptibility
+study has provided.
+
+### Figures Generated
+- shap_importance_bar.png
+- shap_beeswarm.png
+- shap_dependence_plots.png (top 4 features)
+- shap_local_highrisk.png
+
+### Saved Artefacts
+- outputs/shap_importance.csv
+- models/shap_values.npy
+- models/shap_explainer.pkl
+
