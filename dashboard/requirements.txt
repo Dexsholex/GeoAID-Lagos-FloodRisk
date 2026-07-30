@@ -1,0 +1,10 @@
+streamlit
+streamlit-folium
+folium
+plotly
+rasterio
+pandas
+numpy
+joblib
+shap
+earthengine-api
