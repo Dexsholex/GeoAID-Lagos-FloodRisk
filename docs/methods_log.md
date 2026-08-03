@@ -1547,3 +1547,71 @@ architecture.
 - Grid resolution refinement toward the 50m standard applied in Lagos
   State climate analytics
 
+
+---
+
+## Dashboard Audit — Report Claims vs Implemented Features
+
+Conducted before final dashboard iteration. Compares capabilities stated
+in Chapters 1-4 against what the Streamlit application actually does.
+
+### Gaps identified
+
+| Claim | Source | Status |
+|-------|--------|--------|
+| Plain-language mode for non-technical users | FR07, Ch1 significance | Toggle present in sidebar but does not alter output |
+| Local SHAP explanations for selected zones | FR03, Objective iii | Global SHAP only; no per-location explanation |
+| Schools, hospitals, roads, buildings mapped on risk map | FR06 | Not implemented; placeholder `pass` in Tab 1 |
+| Comparative performance metrics for three models | FR02 | Only Random Forest ROC-AUC displayed |
+| Users can query individual locations | Ch2 s2.3.4 | No click handler implemented |
+| Rainfall overlaid on static risk map | FR04, Ch2 s2.3.4 | Displayed as metric cards, not as a map layer |
+| Publicly deployed at no infrastructure cost | FR08 | Not yet deployed |
+
+### Blocking dependency
+NB09 Cell 7 exports exposure tables using
+`.drop(columns='geometry')`, discarding point coordinates. The dashboard
+therefore cannot plot schools, health facilities or roads. This must be
+corrected in NB09 before FR06 and the click-to-query capability can be
+implemented.
+
+### Remediation plan (in scope for MSc submission)
+1. NB09: retain longitude and latitude columns in exposure CSV exports
+2. Dashboard: multiple basemap layers (CartoDB dark, OpenStreetMap,
+   Esri World Imagery) with layer control. OSM shows street grid and
+   building footprints for context; satellite imagery permits visual
+   verification of NDVI and drainage-proximity findings against
+   observable ground conditions
+3. Dashboard: infrastructure markers coloured by risk tier (closes FR06)
+4. Dashboard: click-to-query returning risk tier, top three local SHAP
+   contributors, and a template-assembled plain-language explanation
+   (closes FR03 and the Ch2 s2.3.4 query claim)
+5. Dashboard: wire audience toggle to switch between technical output
+   (SHAP magnitudes, probability values) and plain-language output
+   (closes FR07)
+6. Deploy to Streamlit Community Cloud (closes FR08)
+
+### Decision on FR02
+Model comparison metrics are analytical rather than operational output.
+Options: display a comparison panel in the dashboard, or revise FR02 in
+Chapter 3 to scope it to the report rather than the interface. Decision
+pending — to be resolved deliberately rather than left unmet.
+
+### Decision on conversational explanation layer
+A conversational LLM-based explanation interface was considered and
+deferred to future work. Rationale: no evaluation framework exists within
+this project for measuring explanation faithfulness, and unconstrained
+generation in a system whose users make decisions during flood events
+introduces a safety risk that cannot be mitigated within the project
+timeline. A deterministic template-based explanation generator provides
+equivalent communicative value with auditable output and no possibility
+of hallucination. Documented in Chapter 6 as future work requiring an
+explanation-faithfulness evaluation framework and a safety constraint
+architecture.
+
+### Deferred to post-submission research
+- Expansion beyond Amuwo Odofin to additional Lagos LGAs
+- Transferability testing across LGAs with differing flood mechanisms
+  (coastal/pluvial versus inland/riverine)
+- Grid resolution refinement toward the 50m standard applied in Lagos
+  State climate analytics
+
