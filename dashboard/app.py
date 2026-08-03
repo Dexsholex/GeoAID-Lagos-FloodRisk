@@ -172,11 +172,51 @@ def load_probability_raster():
 
 @st.cache_data
 def load_exposure_tables():
-    schools = pd.read_csv(os.path.join(OUTPUTS_DIR, "schools_risk_exposure.csv"))
-    health  = pd.read_csv(os.path.join(OUTPUTS_DIR, "health_risk_exposure.csv"))
-    roads   = pd.read_csv(os.path.join(OUTPUTS_DIR, "roads_risk_exposure.csv"))
-    pop     = pd.read_csv(os.path.join(OUTPUTS_DIR, "population_exposure.csv"))
+    schools   = pd.read_csv(os.path.join(OUTPUTS_DIR, "schools_risk_exposure.csv"))
+    health    = pd.read_csv(os.path.join(OUTPUTS_DIR, "health_risk_exposure.csv"))
+    roads     = pd.read_csv(os.path.join(OUTPUTS_DIR, "roads_risk_exposure.csv"))
+    pop       = pd.read_csv(os.path.join(OUTPUTS_DIR, "population_exposure.csv"))
     return schools, health, roads, pop
+
+@st.cache_data
+def load_feature_stack():
+    """Loads the 14 resampled feature rasters for point-level SHAP queries."""
+    RESAMPLED = os.path.join(DATA_DIR, "resampled")
+    fmap = {
+        'elevation':               ('resampled_topo_features_amuwo_odofin.tif', 1),
+        'slope':                   ('resampled_topo_features_amuwo_odofin.tif', 2),
+        'aspect':                  ('resampled_topo_features_amuwo_odofin.tif', 3),
+        'flow_accumulation':       ('resampled_topo_features_amuwo_odofin.tif', 4),
+        'twi':                     ('resampled_topo_features_amuwo_odofin.tif', 5),
+        'curvature':               ('resampled_topo_features_amuwo_odofin.tif', 6),
+        'mean_annual_rainfall':    ('resampled_rainfall_lulc_ndvi_amuwo_odofin.tif', 1),
+        'mean_rainy_days':         ('resampled_rainfall_lulc_ndvi_amuwo_odofin.tif', 2),
+        'extreme_rain_freq':       ('resampled_rainfall_lulc_ndvi_amuwo_odofin.tif', 3),
+        'lulc':                    ('resampled_rainfall_lulc_ndvi_amuwo_odofin.tif', 4),
+        'ndvi':                    ('resampled_rainfall_lulc_ndvi_amuwo_odofin.tif', 5),
+        'soil_permeability':       ('resampled_soil_distance_amuwo_odofin.tif', 1),
+        'distance_to_drainage':    ('resampled_soil_distance_amuwo_odofin.tif', 3),
+        'gpm_antecedent_rainfall': ('resampled_gpm_antecedent_rainfall_amuwo_odofin.tif', 1),
+    }
+    ref_path = os.path.join(RESAMPLED, 'resampled_topo_features_amuwo_odofin.tif')
+    with rasterio.open(ref_path) as ref:
+        ref_shape, ref_transform = (ref.height, ref.width), ref.transform
+
+    layers = []
+    for feat, (fn, band) in fmap.items():
+        with rasterio.open(os.path.join(RESAMPLED, fn)) as src:
+            d = src.read(band).astype(np.float32)
+            if d.shape != ref_shape:
+                a = np.full(ref_shape, np.nan, dtype=np.float32)
+                h, w = min(d.shape[0], ref_shape[0]), min(d.shape[1], ref_shape[1])
+                a[:h, :w] = d[:h, :w]
+                d = a
+            layers.append(d)
+    return np.stack(layers, axis=-1), ref_transform, list(fmap.keys())
+
+@st.cache_resource
+def load_explainer():
+    return joblib.load(os.path.join(MODELS_DIR, "shap_explainer.pkl"))
 
 @st.cache_data
 def load_shap_importance():
@@ -242,6 +282,124 @@ def boot_sequence():
 
 boot_sequence()
 
+
+# ── PLAIN-LANGUAGE TRANSLATION ────────────────────────────────────────────────
+# Maps each conditioning factor to what it physically means on the ground,
+# with the direction of effect. Used to assemble explanations from SHAP
+# output without any generative model in the loop.
+
+FEATURE_PLAIN = {
+    'ndvi': {
+        'high': "the area has good vegetation cover, which helps absorb rainfall",
+        'low':  "the ground is mostly concrete and rooftops with very little greenery, "
+                "so rain runs off instead of soaking in"
+    },
+    'elevation': {
+        'high': "the land sits relatively high, so water drains away from it",
+        'low':  "the land is low-lying, so water collects here rather than draining away"
+    },
+    'distance_to_drainage': {
+        'high': "the area is far from any drainage channel",
+        'low':  "the area sits close to a canal or drainage channel that can overflow"
+    },
+    'soil_permeability': {
+        'high': "the soil is sandy and absorbs water reasonably well",
+        'low':  "the soil is clay-heavy and absorbs water poorly, so rain sits on the surface"
+    },
+    'twi': {
+        'high': "the terrain shape causes water to collect and stay here",
+        'low':  "the terrain shape allows water to move through rather than pool"
+    },
+    'slope': {
+        'high': "the ground slopes enough for water to run off",
+        'low':  "the ground is almost flat, so water has nowhere to run to"
+    },
+    'flow_accumulation': {
+        'high': "water from a large surrounding area drains through this point",
+        'low':  "little water from elsewhere flows through this point"
+    },
+    'lulc': {
+        'high': "the land is heavily built up",
+        'low':  "the land is less densely built"
+    },
+    'curvature': {
+        'high': "the ground curves outward, shedding water",
+        'low':  "the ground forms a hollow where water gathers"
+    },
+    'aspect': {
+        'high': "the slope faces a direction that affects how water moves across it",
+        'low':  "the slope faces a direction that affects how water moves across it"
+    },
+    'mean_annual_rainfall': {
+        'high': "the area receives heavy rainfall each year",
+        'low':  "the area receives comparatively less rainfall each year"
+    },
+    'mean_rainy_days': {
+        'high': "rain falls on many days through the year",
+        'low':  "rain falls on fewer days through the year"
+    },
+    'extreme_rain_freq': {
+        'high': "very heavy downpours happen often here",
+        'low':  "very heavy downpours are less frequent here"
+    },
+    'gpm_antecedent_rainfall': {
+        'high': "the ground is often already soaked before a storm arrives",
+        'low':  "the ground is usually drier before a storm arrives"
+    },
+}
+
+TIER_PLAIN = {
+    1: ("Low risk", "This area does not usually flood, even during heavy rain."),
+    2: ("Moderate risk", "This area can flood during unusually heavy or prolonged rain."),
+    3: ("High risk", "This area floods regularly when rain is heavy."),
+    4: ("Very high risk", "This area floods often during heavy rain and water "
+                          "can stay for some time."),
+}
+
+TIER_ADVICE = {
+    1: "No special precautions needed beyond normal rainy-season care.",
+    2: "Keep drains around the property clear before the rainy season starts.",
+    3: "Clear nearby drains before the rains, avoid parking in low spots, "
+       "and keep an eye on rainfall warnings.",
+    4: "Clear nearby drains before the rains, keep valuables raised off the floor, "
+       "plan a route out that avoids the canal, and pay close attention to "
+       "rainfall warnings.",
+}
+
+def explain_plain(tier, shap_row, feature_values, feature_names, top_n=3):
+    """
+    Assembles a plain-language explanation from SHAP output.
+    Deterministic — no generative model involved.
+    """
+    if tier == 0:
+        return "No risk classification is available for this exact spot.", []
+
+    label, opener = TIER_PLAIN[int(tier)]
+
+    order = np.argsort(-np.abs(shap_row))[:top_n]
+    reasons = []
+    for i in order:
+        name = feature_names[i]
+        if name not in FEATURE_PLAIN:
+            continue
+        # SHAP positive = pushes toward flood. Pick the phrasing that matches.
+        direction = 'low' if shap_row[i] > 0 else 'high'
+        # For features where a HIGH value drives flooding, invert
+        if name in ('twi', 'flow_accumulation', 'lulc', 'mean_annual_rainfall',
+                    'mean_rainy_days', 'extreme_rain_freq', 'gpm_antecedent_rainfall'):
+            direction = 'high' if shap_row[i] > 0 else 'low'
+        reasons.append(FEATURE_PLAIN[name][direction])
+
+    if reasons:
+        body = opener + " The main reasons are that " + reasons[0]
+        if len(reasons) > 1:
+            body += ", " + ", ".join(reasons[1:-1] + [f"and {reasons[-1]}"]) \
+                    if len(reasons) > 2 else f", and {reasons[1]}"
+        body += "."
+    else:
+        body = opener
+
+    return body, [(feature_names[i], float(shap_row[i])) for i in order]
 
 
 
@@ -313,10 +471,7 @@ with st.sidebar:
         label_visibility="visible"
     )
     st.markdown("---")
-    map_layer = st.selectbox(
-        "MAP LAYER",
-        ["Risk Tiers (4-class)", "Continuous Probability"]
-    )
+    
     show_infra = st.multiselect(
         "OVERLAY INFRASTRUCTURE",
         ["Schools", "Health Facilities", "Roads"],
@@ -341,60 +496,149 @@ tab1, tab2, tab3, tab4 = st.tabs([
 
 # ── TAB 1: STRUCTURAL RISK MAP ────────────────────────────────────────────────
 with tab1:
+    plain = view_mode.startswith("Plain")
+    feat_stack, feat_transform, feat_names = load_feature_stack()
+
     left, right = st.columns([2.3, 1])
 
     with left:
-        centroid_lat = (tier_bounds.top + tier_bounds.bottom) / 2
-        centroid_lon = (tier_bounds.left + tier_bounds.right) / 2
+        clat = (tier_bounds.top + tier_bounds.bottom) / 2
+        clon = (tier_bounds.left + tier_bounds.right) / 2
 
-        m = folium.Map(location=[centroid_lat, centroid_lon], zoom_start=13,
-                        tiles="CartoDB dark_matter")
+        m = folium.Map(location=[clat, clon], zoom_start=13, tiles=None)
 
-        tier_colors = {1: '#39ff9d', 2: '#ffb454', 3: '#ff8c42', 4: '#ff5c5c'}
-        img_data = np.where(risk_tiers > 0, risk_tiers, np.nan)
-
-        folium.raster_layers.ImageOverlay(
-            image=img_data,
-            bounds=[[tier_bounds.bottom, tier_bounds.left],
-                    [tier_bounds.top, tier_bounds.right]],
-            colormap=lambda x: (
-                (0,0,0,0) if np.isnan(x) else
-                tuple(int(tier_colors[int(x)][i:i+2], 16)/255 for i in (1,3,5)) + (0.65,)
-            ),
-            name="Flood Risk Tiers"
+        # ── Basemaps ──────────────────────────────────────────────────────
+        folium.TileLayer("CartoDB dark_matter", name="Dark (default)",
+                          control=True).add_to(m)
+        folium.TileLayer("OpenStreetMap", name="OpenStreetMap (streets & buildings)",
+                          control=True).add_to(m)
+        folium.TileLayer(
+            tiles="https://server.arcgisonline.com/ArcGIS/rest/services/"
+                  "World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            attr="Esri, Maxar, Earthstar Geographics",
+            name="Satellite imagery (Esri)", control=True
         ).add_to(m)
 
-        if "Schools" in show_infra:
-            for _, row in schools_df.iterrows():
-                if row.get('risk_label') in ['High', 'Very High']:
-                    pass  # school coords not retained in exposure CSV by design;
-                          # dashboard reads from schools_gdf pickle if available
+        # ── Risk tier overlay as RGBA ─────────────────────────────────────
+        rgba = np.zeros((*risk_tiers.shape, 4), dtype=np.uint8)
+        palette = {1: (57, 255, 157), 2: (255, 180, 84),
+                   3: (255, 140, 66), 4: (255, 92, 92)}
+        for t, (r, g, b) in palette.items():
+            mask = risk_tiers == t
+            rgba[mask] = [r, g, b, 165]
 
-        folium.LayerControl().add_to(m)
-        st_folium(m, width=None, height=560)
+        folium.raster_layers.ImageOverlay(
+            image=rgba,
+            bounds=[[tier_bounds.bottom, tier_bounds.left],
+                    [tier_bounds.top, tier_bounds.right]],
+            name="Flood risk zones", opacity=0.75
+        ).add_to(m)
 
+        # ── Infrastructure markers ────────────────────────────────────────
+        marker_cfg = [
+            ("Schools", schools_df, "graduation-cap", "Schools"),
+            ("Health Facilities", health_df, "plus-square", "Health facilities"),
+            ("Roads", roads_df, "road", "Major roads"),
+        ]
+        tier_hex = {1: '#39ff9d', 2: '#ffb454', 3: '#ff8c42', 4: '#ff5c5c', 0: '#888888'}
+
+        for label, df, icon, layer_name in marker_cfg:
+            if label not in show_infra:
+                continue
+            if 'longitude' not in df.columns:
+                st.warning(f"{label}: coordinates missing — re-run NB09 export.")
+                continue
+            fg = folium.FeatureGroup(name=layer_name, show=True)
+            for _, row in df.iterrows():
+                tier = int(row.get('risk_tier', 0))
+                popup = (f"<b>{row.get('name','Unnamed')}</b><br>"
+                         f"{TIER_PLAIN.get(tier, ('Unclassified',''))[0]}")
+                folium.CircleMarker(
+                    location=[row['latitude'], row['longitude']],
+                    radius=5, color='#ffffff', weight=1,
+                    fill=True, fill_color=tier_hex.get(tier, '#888888'),
+                    fill_opacity=0.9, popup=folium.Popup(popup, max_width=250)
+                ).add_to(fg)
+            fg.add_to(m)
+
+        folium.LayerControl(collapsed=False).add_to(m)
+
+        map_state = st_folium(m, width=None, height=580,
+                               returned_objects=["last_clicked"])
+
+    # ── Click-to-query panel ──────────────────────────────────────────────
     with right:
-        st.markdown("**Risk tier legend**")
-        for tier, color, label in [(4,'#ff5c5c','Very High'),(3,'#ff8c42','High'),
-                                     (2,'#ffb454','Moderate'),(1,'#39ff9d','Low')]:
-            st.markdown(f"""<div style="display:flex;align-items:center;margin-bottom:6px;">
-                <div style="width:14px;height:14px;background:{color};border-radius:2px;margin-right:8px;"></div>
-                <span style="color:#b3c2d1;font-size:13px;">{label}</span></div>""",
-                unsafe_allow_html=True)
+        st.markdown("**Query a location**")
+        st.caption("Click anywhere on the map to see why that spot carries its rating.")
+
+        clicked = map_state.get("last_clicked") if map_state else None
+
+        if clicked:
+            qlon, qlat = clicked["lng"], clicked["lat"]
+            row, col = rasterio.transform.rowcol(tier_transform, qlon, qlat)
+
+            in_bounds = (0 <= row < risk_tiers.shape[0] and
+                         0 <= col < risk_tiers.shape[1])
+
+            if not in_bounds:
+                st.warning("That point falls outside the study area.")
+            else:
+                tier = int(risk_tiers[row, col])
+                fvals = feat_stack[row, col, :]
+
+                if tier == 0 or np.isnan(fvals).any():
+                    st.info("No risk classification available for this exact spot. "
+                            "Try clicking slightly inland.")
+                else:
+                    explainer = load_explainer()
+                    sv_raw = explainer.shap_values(fvals.reshape(1, -1))
+                    if isinstance(sv_raw, list):
+                        sv = sv_raw[1][0]
+                    elif len(np.array(sv_raw).shape) == 3:
+                        sv = np.array(sv_raw)[0, :, 1]
+                    else:
+                        sv = np.array(sv_raw)[0]
+
+                    prob = rf_model.predict_proba(fvals.reshape(1, -1))[0, 1]
+                    text, top = explain_plain(tier, sv, fvals, feat_names)
+                    label, _ = TIER_PLAIN[tier]
+                    colour = tier_hex[tier]
+
+                    st.markdown(f"""<div class="geo-metric" style="border-color:{colour};">
+                        <div class="geo-metric-label">CLASSIFICATION</div>
+                        <div class="geo-metric-value" style="color:{colour};">{label}</div>
+                        <div class="geo-metric-sub">{qlat:.5f}, {qlon:.5f}</div>
+                    </div>""", unsafe_allow_html=True)
+                    st.write("")
+
+                    if plain:
+                        st.markdown(f"##### What this means")
+                        st.write(text)
+                        st.markdown("##### What you can do")
+                        st.write(TIER_ADVICE[tier])
+                    else:
+                        st.metric("Flood probability", f"{prob:.3f}")
+                        st.markdown("**Top SHAP contributors**")
+                        for fname, val in top:
+                            arrow = "↑" if val > 0 else "↓"
+                            st.write(f"`{fname}` {arrow} {val:+.4f}")
+                        st.caption(text)
+        else:
+            st.info("No location selected yet.")
 
         st.markdown("---")
-        fig = px.histogram(x=proba_map[proba_map > 0].flatten(), nbins=40,
-                            labels={'x': 'Flood Probability'}, template="plotly_dark")
-        fig.update_traces(marker_color='#39ff9d')
-        fig.update_layout(height=260, margin=dict(l=10,r=10,t=30,b=10),
-                          paper_bgcolor='#10161f', plot_bgcolor='#10161f',
-                          title="Probability distribution")
-        st.plotly_chart(fig, use_container_width=True)
+        st.markdown("**Legend**")
+        for t in [4, 3, 2, 1]:
+            st.markdown(f"""<div style="display:flex;align-items:center;margin-bottom:5px;">
+                <div style="width:13px;height:13px;background:{tier_hex[t]};
+                border-radius:2px;margin-right:8px;"></div>
+                <span style="color:#b3c2d1;font-size:13px;">{TIER_PLAIN[t][0]}</span>
+                </div>""", unsafe_allow_html=True)
         
         
         
         
-        # ── TAB 2: LIVE RAINFALL ACTIVATION (LAYER 2) ────────────────────────────────
+# ── TAB 2: LIVE RAINFALL ACTIVATION (LAYER 2) ────────────────────────────────
 with tab2:
     st.markdown("### Dynamic Risk Activation")
     st.caption("Connects the static structural susceptibility map to current rainfall "
@@ -440,34 +684,51 @@ with tab2:
     
     
     
-    # ── TAB 3: EXPLAINABILITY ────────────────────────────────────────────────────
+# ── TAB 3: EXPLAINABILITY ────────────────────────────────────────────────────
 with tab3:
-    st.markdown("### Why the model predicts what it predicts")
-    st.caption("Global SHAP importance — mean absolute contribution across all test predictions.")
+    plain = view_mode.startswith("Plain")
 
-    fig = px.bar(shap_df.sort_values('Mean_Abs_SHAP'), x='Mean_Abs_SHAP', y='Feature',
-                 orientation='h', template="plotly_dark")
-    fig.update_traces(marker_color='#5ccfe6')
-    fig.update_layout(height=460, paper_bgcolor='#10161f', plot_bgcolor='#10161f',
-                       margin=dict(l=10,r=10,t=10,b=10))
-    st.plotly_chart(fig, use_container_width=True)
+    if plain:
+        st.markdown("### What makes an area flood")
+        st.write("Across Amuwo Odofin, the strongest single factor is how much "
+                 "greenery an area has. Places covered in concrete and rooftops, "
+                 "with little vegetation, flood far more than places with open "
+                 "ground and plants. After that, low-lying land and closeness to "
+                 "a drainage channel matter most.")
+        st.info("Rainfall amount matters less than you might expect here. "
+                "That is because rainfall is roughly the same across the whole "
+                "LGA — what differs between one street and the next is the "
+                "ground itself.")
+    else:
+        st.markdown("### Global SHAP feature importance")
+        st.caption("Mean absolute SHAP value — average impact of each factor "
+                   "on model output across the test set.")
 
-    st.info("**NDVI dominates** — low vegetation cover (impervious surface) is the "
-            "single strongest driver of flood susceptibility in Amuwo Odofin, "
-            "confirmed independently by both SHAP and Gini importance.")
+        fig = px.bar(shap_df.sort_values('Mean_Abs_SHAP'),
+                     x='Mean_Abs_SHAP', y='Feature',
+                     orientation='h', template="plotly_dark")
+        fig.update_traces(marker_color='#5ccfe6')
+        fig.update_layout(height=460, paper_bgcolor='#10161f',
+                          plot_bgcolor='#10161f',
+                          margin=dict(l=10, r=10, t=10, b=10))
+        st.plotly_chart(fig, use_container_width=True)
 
-    col1, col2 = st.columns(2)
-    beeswarm_path = os.path.join(FIGURES_DIR, "shap_beeswarm.png")
-    dep_path = os.path.join(FIGURES_DIR, "shap_dependence_plots.png")
-    if os.path.exists(beeswarm_path):
-        col1.image(beeswarm_path, caption="SHAP beeswarm — direction of effect")
-    if os.path.exists(dep_path):
-        col2.image(dep_path, caption="Dependence plots — top 4 features")
+        st.info("**NDVI dominates.** Low vegetation cover — impervious surface — "
+                "is the strongest single driver of flood susceptibility in "
+                "Amuwo Odofin, confirmed independently by both SHAP and Gini "
+                "importance.")
+
+        col1, col2 = st.columns(2)
+        bees = os.path.join(FIGURES_DIR, "shap_beeswarm.png")
+        dep  = os.path.join(FIGURES_DIR, "shap_dependence_plots.png")
+        if os.path.exists(bees):
+            col1.image(bees, caption="SHAP beeswarm — direction of effect")
+        if os.path.exists(dep):
+            col2.image(dep, caption="Dependence plots — top 4 features")
         
         
         
-        
-        # ── TAB 4: DISASTER INTELLIGENCE ─────────────────────────────────────────────
+# ── TAB 4: DISASTER INTELLIGENCE ─────────────────────────────────────────────
 with tab4:
     st.markdown("### Population and Infrastructure Exposure")
 

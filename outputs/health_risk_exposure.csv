@@ -1,103 +1,103 @@
-osm_id,name,category,risk_tier,risk_label
-11889190332,Bonne Fante Hospital,health,3.0,High
-11889190333,Safe Healing Nursing Home,health,4.0,Very High
-11889190334,Alexander Memorial Hospital Olugbemi Agric,health,3.0,High
-11889190335,St David Med Center,health,1.0,Low
-11889190336,Tedi Primary Health Center Ojo,health,3.0,High
-11889190337,Divine Gift Medical Centre Hospital,health,3.0,High
-11889190338,New Nigeria Hospital,health,0.0,NoData
-11889212942,MRS Hospital,health,2.0,Moderate
-11923596064,Afonja Eye Clinic,health,0.0,NoData
-11923599871,Molabi Hospital,health,0.0,NoData
-11923604168,Victory Life Medical Diagnostic,health,3.0,High
-11923639569,Glory Of God Health Care Centre,health,3.0,High
-11923639570,St Grace Natural Medical Clinic And Me Eternity,health,2.0,Moderate
-11925030440,Crusaints Hospital,health,1.0,Low
-11925030441,Ijegun Primary Health Care,health,3.0,High
-11925030442,Olatemi Maternity Home,health,2.0,Moderate
-11925030443,Datam Conv Health Care Center,health,0.0,NoData
-11925066632,Ijagemo Primary Health Centre,health,4.0,Very High
-11925078333,Ayodamola Health Careand Maternity Home,health,0.0,NoData
-11925139252,Ojo Bala Ologunebi Trado And Maternity Clinic,health,3.0,High
-11925139253,Ijedodo Primary Health Center,health,3.0,High
-11942321673,Panox Hospital and Neurological Center,health,4.0,Very High
-11942321675,Cherith Hospital,health,0.0,NoData
-11942321678,Hf Dental Eye Clinic,health,4.0,Very High
-11942321679,Deoyefemi Clinic Block 4 Jakande Estate Mile 2,health,2.0,Moderate
-11942321681,Jeokem Hospital,health,4.0,Very High
-11942321682,Safehands Medical Centre,health,3.0,High
-11942321683,Blessed Assurance Maternity Home,health,4.0,Very High
-11942321684,Adetunji Memorial Hospital,health,4.0,Very High
-11942350426,Levan Hospital First Avenue G Close Festac Town,health,1.0,Low
-11942350427,Emel Specialist Hospital Festac Town,health,2.0,Moderate
-11942350428,Pentecost Medical Center 112 Festac Town,health,4.0,Very High
-11942350429,Praise Medical Center,health,3.0,High
-11942350430,Faith Care Hospital,health,3.0,High
-11942350431,Zodiac Hospital,health,3.0,High
-11942350432,Holy Rosary Medical Center,health,3.0,High
-11942350433,Godspower Specialist Clinic Hospital And Matanity,health,3.0,High
-11942350434,Neb's Clinic and Health Care Service,health,3.0,High
-11942350435,Sheperd Specialist Hospital,health,2.0,Moderate
-11942350436,St Clements Hospital,health,3.0,High
-11942350437,Royal Oak Hospital,health,1.0,Low
-11942350438,Lasapienza Hospital and Maternity,health,2.0,Moderate
-11942350439,St Judes Hospital Maternity,health,2.0,Moderate
-11942350440,Fravyn Maternity,health,4.0,Very High
-11942350441,Common Sight Ltd,health,4.0,Very High
-11942350442,Makal Medical Center,health,2.0,Moderate
-11942350443,Macfin Medical Clinic,health,1.0,Low
-11942350444,Agboju Primary Health Care Centre,health,1.0,Low
-11942350445,Golden Care Hospital,health,2.0,Moderate
-11942350446,Far East Maternity Center,health,4.0,Very High
-11942350447,St Grace Nursing and Convascent Home,health,3.0,High
-11942350448,Eromon Specialist Hospital,health,2.0,Moderate
-11942424908,Pathcare Laboratories,health,2.0,Moderate
-11942424909,Linopmedical Laboratory Services,health,2.0,Moderate
-11942424910,Renue Clinic,health,1.0,Low
-11942424911,Primecare Hospital Festac,health,3.0,High
-11942424912,De Marvel Hospitalsabo Crown Hospital,health,4.0,Very High
-11942424913,Festac Primary Health Centre,health,2.0,Moderate
-11942424914,Golden Cross Hospital Festac,health,4.0,Very High
-11942424915,Holy Family Catholic Church Medical Centre Festac,health,4.0,Very High
-11942424916,The Hosanna Hospital,health,3.0,High
-11942424917,Bethesda Family Clinic And Maternity,health,2.0,Moderate
-11942424918,Firstline Hospital Festac,health,2.0,Moderate
-11942424919,Elbethel Hospital,health,3.0,High
-11942424920,Nigerian Navy Reference Hospital,health,1.0,Low
-11970671716,Igbologun Medical Centre,health,0.0,NoData
-11970671717,Igbologun Primary Health Center Snake Island,health,2.0,Moderate
-11975012213,Oriom Clinic,health,0.0,NoData
-11975012214,Outreach Medical Service,health,0.0,NoData
-11975012215,Igbologun Medical Center,health,3.0,High
-11975020406,Far East Medical Center,health,1.0,Low
-11975050294,Irede Primary Health Centre,health,3.0,High
-11975057900,Iyagbe Maternity Centre,health,0.0,NoData
-11975079561,St Joseph Mission Clinic,health,2.0,Moderate
-11975079562,The Point Clinic,health,4.0,Very High
-11975079563,Aminat Convalesce Home,health,2.0,Moderate
-11975079564,Asheco Hospital,health,3.0,High
-11975117976,Grace View Medical Center,health,4.0,Very High
-11975117977,Jes 7 Jes Clinic Amuwo Housing,health,2.0,Moderate
-11975119548,Kexpress Clinic,health,4.0,Very High
-11975119549,Dunamis House Medical Center,health,4.0,Very High
-11975119550,Rhowil Total Care Medical Center,health,3.0,High
-11975119551,Life Hope Multi Medical Center,health,3.0,High
-11975119552,Shalom Riyyah Hospital And Maternity,health,2.0,Moderate
-11975119553,Norex Clinic,health,3.0,High
-11975119554,Agbaju Primary Health Center,health,2.0,Moderate
-11975119555,Divine Care Neighborhood Clinic And Maternity Satellite Town,health,2.0,Moderate
-11975119556,Hopeland Hospital,health,4.0,Very High
-11975119557,Outreach Specialist Hospital,health,3.0,High
-11975119558,Charles Henry Specialist Hospital,health,1.0,Low
-11975119559,Irede Primary Health Center Riverine,health,4.0,Very High
-11975119560,Satellite Town Primary Health Care Center,health,3.0,High
-11975127997,Holy Family Hospital and Maternity Home,health,4.0,Very High
-11975127998,Bengoz Maternity Home,health,2.0,Moderate
-11975127999,Irede Primary Health Center,health,3.0,High
-11975128000,De Uzoma Clinic,health,3.0,High
-11975128001,Orion Clinic,health,3.0,High
-11975219713,Joycy Hospital Saka Adisa Street Abule Osun,health,1.0,Low
-12282713900,Lord's own medical center,health,0.0,NoData
-12282723406,Temitope faith clinic and maternity house,health,3.0,High
-707257732,Amuwo Odofin Maternal & Childcare Centre,health,4.0,Very High
-707258933,Emel Hospital,health,1.0,Low
+osm_id,name,category,risk_tier,risk_label,longitude,latitude
+11889190332,Bonne Fante Hospital,health,3.0,High,3.2290417,6.4590801
+11889190333,Safe Healing Nursing Home,health,4.0,Very High,3.2229839,6.4592327
+11889190334,Alexander Memorial Hospital Olugbemi Agric,health,3.0,High,3.2200912,6.4585031
+11889190335,St David Med Center,health,1.0,Low,3.2211815,6.4562244
+11889190336,Tedi Primary Health Center Ojo,health,3.0,High,3.2276148,6.4463071
+11889190337,Divine Gift Medical Centre Hospital,health,3.0,High,3.2218426,6.4457141
+11889190338,New Nigeria Hospital,health,0.0,NoData,3.2142627,6.44454
+11889212942,MRS Hospital,health,2.0,Moderate,3.2276791,6.4696408
+11923596064,Afonja Eye Clinic,health,0.0,NoData,3.2578003,6.5218187
+11923599871,Molabi Hospital,health,0.0,NoData,3.2705033,6.5230578
+11923604168,Victory Life Medical Diagnostic,health,3.0,High,3.2552858,6.5157721
+11923639569,Glory Of God Health Care Centre,health,3.0,High,3.2598013,6.5155549
+11923639570,St Grace Natural Medical Clinic And Me Eternity,health,2.0,Moderate,3.2618196,6.5067047
+11925030440,Crusaints Hospital,health,1.0,Low,3.2525982,6.510892
+11925030441,Ijegun Primary Health Care,health,3.0,High,3.2517278,6.5140412
+11925030442,Olatemi Maternity Home,health,2.0,Moderate,3.2521798,6.5139999
+11925030443,Datam Conv Health Care Center,health,0.0,NoData,3.2506241,6.5225555
+11925066632,Ijagemo Primary Health Centre,health,4.0,Very High,3.2242063,6.5045281
+11925078333,Ayodamola Health Careand Maternity Home,health,0.0,NoData,3.2381793,6.5228606
+11925139252,Ojo Bala Ologunebi Trado And Maternity Clinic,health,3.0,High,3.2443987,6.495324
+11925139253,Ijedodo Primary Health Center,health,3.0,High,3.247498,6.4983674
+11942321673,Panox Hospital and Neurological Center,health,4.0,Very High,3.3042669,6.4708335
+11942321675,Cherith Hospital,health,0.0,NoData,3.3060667,6.4699606
+11942321678,Hf Dental Eye Clinic,health,4.0,Very High,3.3057864,6.4592374
+11942321679,Deoyefemi Clinic Block 4 Jakande Estate Mile 2,health,2.0,Moderate,3.3064985,6.4641826
+11942321681,Jeokem Hospital,health,4.0,Very High,3.3041798,6.4592507
+11942321682,Safehands Medical Centre,health,3.0,High,3.3000143,6.4585418
+11942321683,Blessed Assurance Maternity Home,health,4.0,Very High,3.3033389,6.457457
+11942321684,Adetunji Memorial Hospital,health,4.0,Very High,3.3063564,6.456239
+11942350426,Levan Hospital First Avenue G Close Festac Town,health,1.0,Low,3.2957228,6.4701539
+11942350427,Emel Specialist Hospital Festac Town,health,2.0,Moderate,3.289445,6.4756533
+11942350428,Pentecost Medical Center 112 Festac Town,health,4.0,Very High,3.2929105,6.4700939
+11942350429,Praise Medical Center,health,3.0,High,3.2889321,6.468101
+11942350430,Faith Care Hospital,health,3.0,High,3.2864825,6.4683895
+11942350431,Zodiac Hospital,health,3.0,High,3.2859307,6.4677386
+11942350432,Holy Rosary Medical Center,health,3.0,High,3.2850033,6.4671383
+11942350433,Godspower Specialist Clinic Hospital And Matanity,health,3.0,High,3.2859253,6.4666852
+11942350434,Neb's Clinic and Health Care Service,health,3.0,High,3.2957791,6.4683509
+11942350435,Sheperd Specialist Hospital,health,2.0,Moderate,3.2984921,6.4649528
+11942350436,St Clements Hospital,health,3.0,High,3.2873248,6.4652274
+11942350437,Royal Oak Hospital,health,1.0,Low,3.2935488,6.4657777
+11942350438,Lasapienza Hospital and Maternity,health,2.0,Moderate,3.2952514,6.4646537
+11942350439,St Judes Hospital Maternity,health,2.0,Moderate,3.2955042,6.4633351
+11942350440,Fravyn Maternity,health,4.0,Very High,3.2951535,6.4589649
+11942350441,Common Sight Ltd,health,4.0,Very High,3.2959856,6.4589769
+11942350442,Makal Medical Center,health,2.0,Moderate,3.2941228,6.4577236
+11942350443,Macfin Medical Clinic,health,1.0,Low,3.2929346,6.4583206
+11942350444,Agboju Primary Health Care Centre,health,1.0,Low,3.2912824,6.4590935
+11942350445,Golden Care Hospital,health,2.0,Moderate,3.286736,6.4581567
+11942350446,Far East Maternity Center,health,4.0,Very High,3.2968748,6.4567894
+11942350447,St Grace Nursing and Convascent Home,health,3.0,High,3.2927126,6.455682
+11942350448,Eromon Specialist Hospital,health,2.0,Moderate,3.2916337,6.4522586
+11942424908,Pathcare Laboratories,health,2.0,Moderate,3.2741618,6.4708521
+11942424909,Linopmedical Laboratory Services,health,2.0,Moderate,3.27408,6.4706469
+11942424910,Renue Clinic,health,1.0,Low,3.2782991,6.4701285
+11942424911,Primecare Hospital Festac,health,3.0,High,3.2780966,6.4690358
+11942424912,De Marvel Hospitalsabo Crown Hospital,health,4.0,Very High,3.2714729,6.4645584
+11942424913,Festac Primary Health Centre,health,2.0,Moderate,3.2837695,6.4694543
+11942424914,Golden Cross Hospital Festac,health,4.0,Very High,3.2833041,6.4681337
+11942424915,Holy Family Catholic Church Medical Centre Festac,health,4.0,Very High,3.2830212,6.4683802
+11942424916,The Hosanna Hospital,health,3.0,High,3.2840994,6.4675061
+11942424917,Bethesda Family Clinic And Maternity,health,2.0,Moderate,3.283866,6.4632738
+11942424918,Firstline Hospital Festac,health,2.0,Moderate,3.2841249,6.4626635
+11942424919,Elbethel Hospital,health,3.0,High,3.2766187,6.4568974
+11942424920,Nigerian Navy Reference Hospital,health,1.0,Low,3.2821199,6.4516509
+11970671716,Igbologun Medical Centre,health,0.0,NoData,3.3325555,6.4206234
+11970671717,Igbologun Primary Health Center Snake Island,health,2.0,Moderate,3.3286428,6.4177241
+11975012213,Oriom Clinic,health,0.0,NoData,3.2544288,6.4249233
+11975012214,Outreach Medical Service,health,0.0,NoData,3.2454273,6.4213624
+11975012215,Igbologun Medical Center,health,3.0,High,3.2523206,6.4137527
+11975020406,Far East Medical Center,health,1.0,Low,3.2743549,6.4223233
+11975050294,Irede Primary Health Centre,health,3.0,High,3.2338093,6.4266452
+11975057900,Iyagbe Maternity Centre,health,0.0,NoData,3.2002549,6.4182879
+11975079561,St Joseph Mission Clinic,health,2.0,Moderate,3.3109456,6.4462778
+11975079562,The Point Clinic,health,4.0,Very High,3.3119468,6.4428902
+11975079563,Aminat Convalesce Home,health,2.0,Moderate,3.3120386,6.4416056
+11975079564,Asheco Hospital,health,3.0,High,3.3118978,6.4388124
+11975117976,Grace View Medical Center,health,4.0,Very High,3.2774971,6.4467495
+11975117977,Jes 7 Jes Clinic Amuwo Housing,health,2.0,Moderate,3.2798119,6.4481701
+11975119548,Kexpress Clinic,health,4.0,Very High,3.2608929,6.4557813
+11975119549,Dunamis House Medical Center,health,4.0,Very High,3.2619672,6.4557233
+11975119550,Rhowil Total Care Medical Center,health,3.0,High,3.2625472,6.453204
+11975119551,Life Hope Multi Medical Center,health,3.0,High,3.2605657,6.4542575
+11975119552,Shalom Riyyah Hospital And Maternity,health,2.0,Moderate,3.2420866,6.4675367
+11975119553,Norex Clinic,health,3.0,High,3.2417527,6.46519
+11975119554,Agbaju Primary Health Center,health,2.0,Moderate,3.2454561,6.4531161
+11975119555,Divine Care Neighborhood Clinic And Maternity Satellite Town,health,2.0,Moderate,3.2520369,6.4529548
+11975119556,Hopeland Hospital,health,4.0,Very High,3.2562956,6.4517575
+11975119557,Outreach Specialist Hospital,health,3.0,High,3.2564941,6.4509872
+11975119558,Charles Henry Specialist Hospital,health,1.0,Low,3.256643,6.4486838
+11975119559,Irede Primary Health Center Riverine,health,4.0,Very High,3.2608272,6.44841
+11975119560,Satellite Town Primary Health Care Center,health,3.0,High,3.2646802,6.4497333
+11975127997,Holy Family Hospital and Maternity Home,health,4.0,Very High,3.2614616,6.4457401
+11975127998,Bengoz Maternity Home,health,2.0,Moderate,3.2663083,6.4420493
+11975127999,Irede Primary Health Center,health,3.0,High,3.2650986,6.4413071
+11975128000,De Uzoma Clinic,health,3.0,High,3.2636301,6.4413204
+11975128001,Orion Clinic,health,3.0,High,3.259295,6.4345972
+11975219713,Joycy Hospital Saka Adisa Street Abule Osun,health,1.0,Low,3.2316582,6.4548372
+12282713900,Lord's own medical center,health,0.0,NoData,3.2337858,6.5250008
+12282723406,Temitope faith clinic and maternity house,health,3.0,High,3.2372613,6.5204337
+707257732,Amuwo Odofin Maternal & Childcare Centre,health,4.0,Very High,3.3022453,6.4615407
+707258933,Emel Hospital,health,1.0,Low,3.2895368,6.4757329

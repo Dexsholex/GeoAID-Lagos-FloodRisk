@@ -1615,3 +1615,68 @@ architecture.
 - Grid resolution refinement toward the 50m standard applied in Lagos
   State climate analytics
 
+
+---
+
+## Dashboard Remediation — Closing Report/Artifact Gaps
+
+Implemented following the dashboard audit. Each item closes a capability
+claimed in Chapters 1-4 but absent from the running application.
+
+### NB09 export corrected (blocking dependency)
+Cell 7 previously used `.drop(columns='geometry')`, discarding point
+coordinates. Replaced with an `export_with_coords()` helper writing
+explicit `longitude` and `latitude` columns. Buildings exposure table
+added to the export set. Verified: schools_risk_exposure.csv header now
+reads `osm_id,name,category,risk_tier,risk_label,longitude,latitude`.
+
+### Multiple basemap layers (defence utility)
+Three tile layers with a layer control: CartoDB dark matter (default,
+matches interface palette), OpenStreetMap (street grid and building
+footprints for local context), and Esri World Imagery (satellite, for
+visual verification of model findings against observable ground
+conditions). Esri chosen over Google tiles, whose terms restrict use
+outside the Maps API. The satellite layer permits direct visual
+corroboration of the NDVI and drainage-proximity findings during defence.
+
+### Infrastructure markers on interactive map (closes FR06)
+Schools, health facilities and roads plotted as circle markers coloured
+by assigned risk tier, grouped into toggleable feature layers with
+name-and-tier popups.
+
+### Click-to-query with local SHAP (closes FR03, Ch2 s2.3.4)
+Clicking any map location resolves the point to a raster cell, retrieves
+the 14 feature values from the resampled stack, computes SHAP values via
+the saved TreeExplainer, and returns the risk tier with the three
+strongest contributing factors. Handles out-of-bounds clicks and cells
+with incomplete feature coverage.
+
+### Plain-language translation layer (closes FR07)
+Deterministic template engine mapping each conditioning factor to its
+physical meaning with direction of effect. Example: a positive SHAP
+value on `ndvi` renders as "the ground is mostly concrete and rooftops
+with very little greenery, so rain runs off instead of soaking in".
+Combined with tier-specific opener and advice text.
+
+No generative model is involved. This was a deliberate design decision:
+templated assembly is fully auditable and cannot hallucinate, which
+matters in a system whose users make decisions during flood events.
+The audience toggle now switches Tab 1 and Tab 3 between technical
+output (SHAP magnitudes, probability values) and plain-language output.
+
+### Dead control removed
+The MAP LAYER selectbox was non-functional and has been removed rather
+than left as a control that does nothing.
+
+### Repository size check for deployment
+models/ 70MB, outputs/ 4.3MB, data/resampled/ 1.8MB — 76MB total.
+`git check-ignore` confirmed no exclusion of model or raster artefacts.
+Within GitHub limits; Git LFS not required.
+
+### Outstanding
+- FR02 (comparative model metrics in dashboard): decision pending —
+  display panel, or rescope requirement in Chapter 3 to the report only
+- Live GEE rainfall on hosted deployment requires a service account
+  credential in Streamlit secrets; falls back to cached warning until
+  configured
+

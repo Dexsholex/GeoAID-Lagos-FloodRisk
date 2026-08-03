@@ -236,3 +236,17 @@ xgboost==3.2.0
 xkit==0.0.0
 xyzservices==2026.3.0
 zipp==1.0.0
+
+streamlit==1.56.0
+streamlit-folium
+folium
+plotly
+rasterio
+pandas
+numpy
+joblib
+shap
+scikit-learn
+xgboost
+earthengine-api
+

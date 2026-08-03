@@ -1,36 +1,36 @@
-osm_id,name,category,risk_tier,risk_label
-12281528737,Danny grace academy,school,4.0,Very High
-12281528738,DE MICROBYTES,school,3.0,High
-12281528739,Triple b nursery and primary,school,0.0,NoData
-12281528740,JEMFAS SCHOOLS,school,1.0,Low
-12281528742,PILLARS COLLEGE,school,4.0,Very High
-12281528743,PILLARS PRIMARY SCHOOL,school,4.0,Very High
-12281528744,Mary Greg Schools,school,0.0,NoData
-12281528746,Bridge School,school,0.0,NoData
-12281528747,Al ibadah children School,school,0.0,NoData
-12281528748,Tutorial lesson,school,0.0,NoData
-12281528749,House,school,0.0,NoData
-12281528763,Excellent Breed School,school,0.0,NoData
-12281528764,Connection Private school,school,0.0,NoData
-12281528765,Beatom Excellent Montessori,school,0.0,NoData
-12281528766,Denoy kids academy & college,school,3.0,High
-13943316054,Ojo Senior High School,school,4.0,Very High
-13943316055,Ojo Junior High School,school,3.0,High
-733633242,Unnamed,school,2.0,Moderate
-733633243,Unnamed,school,0.0,NoData
-735119438,Nigerian Navy Secondary School Ojo,school,4.0,Very High
-783616104,Unnamed,school,4.0,Very High
-783616108,Unnamed,school,3.0,High
-784077453,Unnamed,school,4.0,Very High
-784077454,Unnamed,school,2.0,Moderate
-784077455,Unnamed,school,4.0,Very High
-784077456,Unnamed,school,4.0,Very High
-784077458,Unnamed,school,4.0,Very High
-784077462,Unnamed,school,3.0,High
-785952134,Unnamed,school,2.0,Moderate
-786386204,Unnamed,school,4.0,Very High
-786391674,Unnamed,school,0.0,NoData
-786391675,Unnamed,school,0.0,NoData
-786992232,Unnamed,school,0.0,NoData
-786992233,Unnamed,school,0.0,NoData
-795977399,Hopeful Kids,school,2.0,Moderate
+osm_id,name,category,risk_tier,risk_label,longitude,latitude
+12281528737,Danny grace academy,school,4.0,Very High,3.2323297,6.5215423
+12281528738,DE MICROBYTES,school,3.0,High,3.2316771,6.5200787
+12281528739,Triple b nursery and primary,school,0.0,NoData,3.2343541,6.5227792
+12281528740,JEMFAS SCHOOLS,school,1.0,Low,3.2290403,6.5211169
+12281528742,PILLARS COLLEGE,school,4.0,Very High,3.233245,6.5216733
+12281528743,PILLARS PRIMARY SCHOOL,school,4.0,Very High,3.2326753,6.5213164
+12281528744,Mary Greg Schools,school,0.0,NoData,3.2361984,6.5251875
+12281528746,Bridge School,school,0.0,NoData,3.2361401,6.5225172
+12281528747,Al ibadah children School,school,0.0,NoData,3.2375165,6.522484
+12281528748,Tutorial lesson,school,0.0,NoData,3.2394586,6.5241514
+12281528749,House,school,0.0,NoData,3.2400836,6.5247633
+12281528763,Excellent Breed School,school,0.0,NoData,3.2290444,6.5240321
+12281528764,Connection Private school,school,0.0,NoData,3.2277602,6.5246006
+12281528765,Beatom Excellent Montessori,school,0.0,NoData,3.2293439,6.5231863
+12281528766,Denoy kids academy & college,school,3.0,High,3.2283632,6.5224477
+13943316054,Ojo Senior High School,school,4.0,Very High,3.2180986,6.4528502
+13943316055,Ojo Junior High School,school,3.0,High,3.2191215,6.4527587
+733633242,Unnamed,school,2.0,Moderate,3.2776729,6.51518
+733633243,Unnamed,school,0.0,NoData,3.2911168,6.5226964
+735119438,Nigerian Navy Secondary School Ojo,school,4.0,Very High,3.2760129,6.4510614
+783616104,Unnamed,school,4.0,Very High,3.2761125,6.4631541
+783616108,Unnamed,school,3.0,High,3.2717288,6.4737368
+784077453,Unnamed,school,4.0,Very High,3.284155,6.4557219
+784077454,Unnamed,school,2.0,Moderate,3.284884,6.4575464
+784077455,Unnamed,school,4.0,Very High,3.283577,6.4567191
+784077456,Unnamed,school,4.0,Very High,3.2811088,6.4572833
+784077458,Unnamed,school,4.0,Very High,3.2805795,6.4564825
+784077462,Unnamed,school,3.0,High,3.3122304,6.4441269
+785952134,Unnamed,school,2.0,Moderate,3.2285401,6.4458247
+786386204,Unnamed,school,4.0,Very High,3.2599414,6.448167
+786391674,Unnamed,school,0.0,NoData,3.3014596,6.5263727
+786391675,Unnamed,school,0.0,NoData,3.3041792,6.527175
+786992232,Unnamed,school,0.0,NoData,3.3104838,6.4585051
+786992233,Unnamed,school,0.0,NoData,3.3111616,6.4573949
+795977399,Hopeful Kids,school,2.0,Moderate,3.2446741,6.4985373
