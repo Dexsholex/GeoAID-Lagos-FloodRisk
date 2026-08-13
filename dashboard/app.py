@@ -12,7 +12,7 @@ import folium
 from streamlit_folium import st_folium
 import plotly.graph_objects as go
 import plotly.express as px
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import ee
 import os
 import time
@@ -143,6 +143,32 @@ section[data-testid="stSidebar"] {
 @keyframes pulse { 0%,100% {opacity:1;} 50% {opacity:0.25;} }
 
 footer, #MainMenu { visibility: hidden; }
+
+/* Shrink and mute tile attribution — kept for licence compliance,
+   but out of the way */
+.leaflet-control-attribution {
+    font-size: 8px !important;
+    opacity: 0.45;
+    background: rgba(10,14,20,0.7) !important;
+    padding: 1px 4px !important;
+    max-width: 60vw;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.leaflet-control-attribution a { color: #5c6b7a !important; }
+
+/* Mobile: stack metric cards, shrink header type */
+@media (max-width: 768px) {
+    .geo-title { font-size: 21px; }
+    .geo-subtitle { font-size: 11px; }
+    .geo-metric-value { font-size: 19px; }
+    .geo-metric { padding: 11px 13px; }
+    .geo-tag { font-size: 9px; padding: 2px 7px; }
+    .stTabs [data-baseweb="tab"] { font-size: 11px; }
+    section[data-testid="stSidebar"] { width: 100% !important; }
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -159,6 +185,11 @@ FIGURES_DIR = os.path.join(OUTPUTS_DIR, "figures")
 @st.cache_resource
 def load_model():
     return joblib.load(os.path.join(MODELS_DIR, "random_forest.pkl"))
+
+@st.cache_data
+def load_boundary():
+    with open(os.path.join(DATA_DIR, "amuwo_odofin_boundary.geojson")) as f:
+        return json.load(f)
 
 @st.cache_data
 def load_risk_raster():
@@ -216,7 +247,12 @@ def load_feature_stack():
 
 @st.cache_resource
 def load_explainer():
-    return joblib.load(os.path.join(MODELS_DIR, "shap_explainer.pkl"))
+    """
+    Constructs TreeExplainer from the loaded model rather than unpickling.
+    A pickled explainer carries numba-compiled objects that fail to
+    deserialise across numba versions between local and cloud environments.
+    """
+    return shap.TreeExplainer(load_model())
 
 @st.cache_data
 def load_shap_importance():
@@ -241,17 +277,23 @@ def fetch_live_rainfall(_gee_ready):
                   .filter(ee.Filter.eq('ADM1_NAME', 'Lagos')) \
                   .filter(ee.Filter.stringContains('ADM2_NAME', 'Amuwo Odofin'))
         geom = amuwo.geometry()
-        now = ee.Date(datetime.utcnow().isoformat())
+        now = ee.Date(datetime.now(timezone.utc).isoformat())
 
         def window_sum(hours):
             start = now.advance(-hours, 'hour')
             img = ee.ImageCollection("NASA/GPM_L3/IMERG_V07") \
                     .filterBounds(geom).filterDate(start, now) \
                     .select('precipitation').sum().multiply(0.5)
-            val = img.reduceRegion(ee.Reducer.mean(), geom, 500, bestEffort=True).getInfo()
+            val = img.reduceRegion(ee.Reducer.mean(), geom, 500,
+                                    bestEffort=True).getInfo()
             return val.get('precipitation', 0.0) or 0.0
 
-        return {'r24': window_sum(24), 'r72': window_sum(72)}
+        latest = ee.ImageCollection("NASA/GPM_L3/IMERG_V07") \
+                   .filterBounds(geom).sort('system:time_start', False).first()
+        last_ts = ee.Date(latest.get('system:time_start')) \
+                    .format('YYYY-MM-dd HH:mm').getInfo()
+
+        return {'r24': window_sum(24), 'r72': window_sum(72), 'last': last_ts}
     except Exception:
         return None
 
@@ -264,7 +306,7 @@ def boot_sequence():
         ("$ geoaid --init --lga=amuwo_odofin", ""),
         ("[OK] loading random_forest.pkl ................ 0.798 ROC-AUC", ""),
         ("[OK] loading flood_risk_tiers.tif .............. 13,022 px", ""),
-        ("[OK] loading shap_explainer ..................... 14 features", ""),
+        ("[OK] building TreeExplainer ..................... 14 features", ""),
         ("[..] establishing GEE session (ee-festac) .......", "dim"),
         ("[OK] querying GPM IMERG live rainfall window ....", ""),
         ("[OK] disaster intelligence layer ................ 229,402 ppl @ risk", "warn"),
@@ -405,7 +447,10 @@ def explain_plain(tier, shap_row, feature_values, feature_names, top_n=3):
 
 # ── HEADER ─────────────────────────────────────────────────────────────────
 gee_ready = init_gee()
-now_str = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+WAT = timezone(timedelta(hours=1))
+now_wat = datetime.now(WAT).strftime("%Y-%m-%d %H:%M WAT")
+now_utc = datetime.now(timezone.utc).strftime("%H:%M UTC")
+time_str = f"{now_wat} ({now_utc})"
 
 st.markdown(f"""
 <div class="geo-header">
@@ -416,7 +461,7 @@ st.markdown(f"""
     </span>
     <div class="geo-title">GeoAID // Amuwo Odofin Flood Intelligence</div>
     <div class="geo-subtitle">Geospatial AI-enabled Disaster Intelligence — Structural Susceptibility · Rainfall Activation · Exposure Assessment</div>
-    <div class="geo-subtitle" style="margin-top:6px;">Session time: {now_str} · Random Forest (14 features) · Miva Open University MSc Project</div>
+    <div class="geo-subtitle" style="margin-top:6px;">Session time: {now_utc} · Random Forest (14 features) · Miva Open University MSc Project</div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -439,13 +484,22 @@ health_at_risk  = health_df['risk_label'].isin(['High', 'Very High']).sum()
 roads_at_risk   = roads_df['risk_label'].isin(['High', 'Very High']).sum()
 
 # ── METRIC ROW ─────────────────────────────────────────────────────────────
-c1, c2, c3, c4, c5 = st.columns(5)
+# Split 3 + 2 so cards stay readable on mobile rather than crushing
+# five columns into a phone-width viewport.
+row1 = st.columns(3)
+row2 = st.columns(2)
+cols = list(row1) + list(row2)
+
 metrics = [
-    (c1, "MODEL ROC-AUC", "0.798", "Random Forest · 14 features"),
-    (c2, "POP. AT RISK", f"{at_risk_pop:,.0f}", f"{at_risk_pop/total_pop*100:.1f}% of {total_pop:,.0f}"),
-    (c3, "SCHOOLS EXPOSED", f"{schools_at_risk} / {len(schools_df)}", "High + Very High tier"),
-    (c4, "HEALTH FACILITIES", f"{health_at_risk} / {len(health_df)}", "High + Very High tier"),
-    (c5, "ROADS EXPOSED", f"{roads_at_risk} / {len(roads_df)}", "Access constraint risk"),
+    (cols[0], "MODEL ROC-AUC", "0.798", "Random Forest · 14 features"),
+    (cols[1], "POP. AT RISK", f"{at_risk_pop:,.0f}",
+     f"{at_risk_pop/total_pop*100:.1f}% of {total_pop:,.0f}"),
+    (cols[2], "SCHOOLS EXPOSED", f"{schools_at_risk} / {len(schools_df)}",
+     "High + Very High tier"),
+    (cols[3], "HEALTH FACILITIES", f"{health_at_risk} / {len(health_df)}",
+     "High + Very High tier"),
+    (cols[4], "ROADS EXPOSED", f"{roads_at_risk} / {len(roads_df)}",
+     "Access constraint risk"),
 ]
 for col, label, val, sub in metrics:
     col.markdown(f"""
@@ -455,6 +509,7 @@ for col, label, val, sub in metrics:
         <div class="geo-metric-sub">{sub}</div>
     </div>
     """, unsafe_allow_html=True)
+    
 
 st.write("")
 
@@ -475,7 +530,7 @@ with st.sidebar:
     show_infra = st.multiselect(
         "OVERLAY INFRASTRUCTURE",
         ["Schools", "Health Facilities", "Roads"],
-        default=["Schools", "Health Facilities"]
+        default=["Schools", "Health Facilities", "Roads"]
     )
     st.markdown("---")
     st.markdown(f'<span class="geo-metric-label">DATA SOURCES</span>', unsafe_allow_html=True)
@@ -519,6 +574,15 @@ with tab1:
             name="Satellite imagery (Esri)", control=True
         ).add_to(m)
 
+        folium.GeoJson(
+            load_boundary(),
+            name="Amuwo Odofin boundary",
+            style_function=lambda x: {
+                'color': '#ff2d2d', 'weight': 3,
+                'fillOpacity': 0, 'dashArray': '6,4'
+            }
+        ).add_to(m)
+
         # ── Risk tier overlay as RGBA ─────────────────────────────────────
         rgba = np.zeros((*risk_tiers.shape, 4), dtype=np.uint8)
         palette = {1: (57, 255, 157), 2: (255, 180, 84),
@@ -551,19 +615,23 @@ with tab1:
             fg = folium.FeatureGroup(name=layer_name, show=True)
             for _, row in df.iterrows():
                 tier = int(row.get('risk_tier', 0))
-                popup = (f"<b>{row.get('name','Unnamed')}</b><br>"
-                         f"{TIER_PLAIN.get(tier, ('Unclassified',''))[0]}")
+                popup_html = (
+                    f"<b>{row.get('name','Unnamed')}</b><br>"
+                    f"{TIER_PLAIN.get(tier, ('Unclassified',''))[0]}<br>"
+                    f"<span style='font-size:11px;color:#666;'>"
+                    f"{row['latitude']:.5f}, {row['longitude']:.5f}</span>"
+                )
                 folium.CircleMarker(
                     location=[row['latitude'], row['longitude']],
                     radius=5, color='#ffffff', weight=1,
                     fill=True, fill_color=tier_hex.get(tier, '#888888'),
-                    fill_opacity=0.9, popup=folium.Popup(popup, max_width=250)
+                    fill_opacity=0.9, popup=folium.Popup(popup_html, max_width=250)
                 ).add_to(fg)
             fg.add_to(m)
 
         folium.LayerControl(collapsed=False).add_to(m)
 
-        map_state = st_folium(m, width=None, height=580,
+        map_state = st_folium(m, use_container_width=True, height=560,
                                returned_objects=["last_clicked"])
 
     # ── Click-to-query panel ──────────────────────────────────────────────
@@ -647,10 +715,14 @@ with tab2:
     rainfall = fetch_live_rainfall(gee_ready)
 
     if rainfall is None:
-        st.warning("⚠ GEE session unavailable — showing last cached extreme-rainfall threshold (50mm/day, CHIRPS climatology).")
+        st.warning("⚠ GEE session unavailable — live rainfall not retrieved. "
+                   "Showing zero baseline against the 50mm/day extreme-rainfall "
+                   "threshold from CHIRPS climatology.")
         r24, r72 = 0.0, 0.0
     else:
         r24, r72 = rainfall['r24'], rainfall['r72']
+        if rainfall.get('last'):
+            st.caption(f"GPM IMERG last observation: {rainfall['last']} UTC")
 
     THRESHOLD_24H = 50.0
     activated = r24 >= THRESHOLD_24H
