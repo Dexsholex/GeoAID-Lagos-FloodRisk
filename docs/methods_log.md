@@ -1776,3 +1776,51 @@ GEE live rainfall requires a service account credential in Streamlit
 secrets to function on the hosted instance; the app degrades gracefully
 to a cached-state warning until that is configured.
 
+
+---
+
+## Dashboard — Deployment Fixes and UX Refinement
+
+### Deployment crash resolved
+Streamlit Community Cloud raised a TypeError unpickling
+`shap_explainer.pkl`. Cause: the pickled TreeExplainer carries
+numba-compiled objects that fail to deserialise across numba versions
+between the local environment and the cloud runtime (Python 3.14).
+Fix: construct the explainer from the loaded model at runtime rather
+than unpickling. Construction is inexpensive; only SHAP value
+computation is costly. `runtime.txt` added pinning python-3.11 to
+prevent further version drift on the hosted environment.
+
+### Code faults found in review
+Three faults identified and corrected before redeployment:
+- `fetch_live_rainfall()` contained a return statement placed before
+  the `window_sum` definition, making the function body unreachable and
+  calling an undefined name
+- Tab 2 rainfall assignment logic was inverted, zeroing values when data
+  was present and raising TypeError when absent
+- Infrastructure marker popup referenced `popup` instead of `popup_html`
+
+### UX refinements
+- Amuwo Odofin LGA boundary rendered as a dashed red outline from the
+  NB01 GeoJSON, distinguishing the true study area from the rectangular
+  raster extent
+- Session time displayed in West Africa Time with UTC in parentheses
+- GPM IMERG last observation timestamp surfaced in Tab 2, so users can
+  judge data freshness rather than assuming the reading is current
+- Roads enabled by default in the infrastructure overlay
+- Marker popups now include coordinates alongside name and risk tier
+- Metric row split 3 + 2 and mobile breakpoints added at 768px, so the
+  dashboard remains usable on a phone
+- Map set to fill its container width
+- Tile attribution reduced in size and opacity. Retained rather than
+  removed: OpenStreetMap ODbL, CARTO and Esri terms all require visible
+  attribution, and removing it would place a licensing violation in a
+  public repository
+
+### Deployment
+Live at https://geoaid-lagos-flood.streamlit.app (closes FR08).
+Repository artefacts total 76MB, within GitHub limits, no LFS required.
+GEE live rainfall requires a service account credential in Streamlit
+secrets to function on the hosted instance; the app degrades gracefully
+to a cached-state warning until that is configured.
+
