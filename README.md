@@ -116,4 +116,4 @@ Geospatial Data Scientist · GIS, Remote Sensing & Spatial Analytics
 
 ## Acknowledgements
 
-Built under the supervision of [Supervisor's Name], Department of Information Technology, School of Computing, Miva Open University.
+Built under the supervision of Dr Habeeb Bello Salau, Department of Information Technology, School of Computing, Miva Open University.
