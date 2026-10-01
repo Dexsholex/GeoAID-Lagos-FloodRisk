@@ -261,7 +261,10 @@ def load_shap_importance():
 @st.cache_resource
 def init_gee():
     try:
-        ee.Initialize(project='ee-festac')
+        email = st.secrets["gee_service_account"]["client_email"]
+        key_json = st.secrets["gee_service_account"]["private_key_json"]
+        credentials = ee.ServiceAccountCredentials(email, key_data=key_json)
+        ee.Initialize(credentials)
         return True
     except Exception:
         return False
@@ -291,7 +294,7 @@ def fetch_live_rainfall(_gee_ready):
         latest = ee.ImageCollection("NASA/GPM_L3/IMERG_V07") \
                    .filterBounds(geom).sort('system:time_start', False).first()
         last_ts = ee.Date(latest.get('system:time_start')) \
-                    .format('YYYY-MM-dd HH:mm').getInfo()
+                    .format('YYYY-MM-dd HH:mm', 'Africa/Lagos').getInfo()
 
         return {'r24': window_sum(24), 'r72': window_sum(72), 'last': last_ts}
     except Exception:
@@ -629,7 +632,7 @@ with tab1:
                 ).add_to(fg)
             fg.add_to(m)
 
-        folium.LayerControl(collapsed=False).add_to(m)
+        folium.LayerControl(collapsed=True).add_to(m)
 
         map_state = st_folium(m, use_container_width=True, height=560,
                                returned_objects=["last_clicked"])
@@ -722,7 +725,7 @@ with tab2:
     else:
         r24, r72 = rainfall['r24'], rainfall['r72']
         if rainfall.get('last'):
-            st.caption(f"GPM IMERG last observation: {rainfall['last']} UTC")
+            st.caption(f"GPM IMERG last observation: {rainfall['last']} WAT")
 
     THRESHOLD_24H = 50.0
     activated = r24 >= THRESHOLD_24H
