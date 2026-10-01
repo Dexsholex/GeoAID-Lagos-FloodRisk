@@ -451,9 +451,9 @@ def explain_plain(tier, shap_row, feature_values, feature_names, top_n=3):
 # ── HEADER ─────────────────────────────────────────────────────────────────
 gee_ready = init_gee()
 WAT = timezone(timedelta(hours=1))
-now_wat = datetime.now(WAT).strftime("%Y-%m-%d %H:%M WAT")
-now_utc = datetime.now(timezone.utc).strftime("%H:%M UTC")
-time_str = f"{now_wat} ({now_utc})"
+now_wat = datetime.now(WAT).strftime("%Y-%m-%d %H:%M")
+now_utc = datetime.now(timezone.utc).strftime("%H:%M")
+now_str = f"{now_wat} WAT ({now_utc} UTC)"
 
 st.markdown(f"""
 <div class="geo-header">
