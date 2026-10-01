@@ -270,9 +270,9 @@ def init_gee():
         return False
 
 @st.cache_data(ttl=1800)  # refresh every 30 min
-def fetch_live_rainfall(_gee_ready):
+def fetch_live_rainfall(gee_ready):   # ← no leading underscore
     """Pulls 24hr and 72hr GPM IMERG rainfall for Amuwo Odofin — Layer 2 activation."""
-    if not _gee_ready:
+    if not gee_ready:   # ← match the new name here too
         return None
     try:
         amuwo = ee.FeatureCollection("FAO/GAUL/2015/level2") \
