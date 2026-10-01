@@ -297,7 +297,8 @@ def fetch_live_rainfall(gee_ready):   # ← no leading underscore
                     .format('YYYY-MM-dd HH:mm', 'Africa/Lagos').getInfo()
 
         return {'r24': window_sum(24), 'r72': window_sum(72), 'last': last_ts}
-    except Exception:
+    except Exception as e:
+        print(f"[GeoAID DEBUG] fetch_live_rainfall failed: {type(e).__name__}: {e}")
         return None
 
 
